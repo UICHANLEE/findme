@@ -33,5 +33,5 @@ test("administrator, QR, persistence, and deployment output are present", async 
   assert.match(check, /teamName/);
   assert.match(vercel, /"icn1"/);
   await access(new URL(".next/BUILD_ID", root));
-  await access(new URL("public/og.png", root));
+  await access(new URL("public/favicon.svg", root));
 });

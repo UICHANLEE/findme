@@ -15,6 +15,7 @@ test("participant and themed-room experiences are present", async () => {
   assert.match(home, /\/api\/status/);
   assert.match(home, /방을 찾으러 다니는 중/);
   assert.match(home, /team\.teamName/);
+  assert.match(home, /elapsedRoomLabel/);
   assert.match(room, /퇴장 QR/);
   for (const name of ["눈으로 find", "소리로 find", "몸으로 find", "마음으로 find", "은혜로 find"]) assert.match(data, new RegExp(name));
 });
@@ -29,6 +30,7 @@ test("administrator, QR, persistence, and deployment output are present", async 
   assert.match(admin, /전체 초기화/);
   assert.match(admin, /운영 Q-sheet/);
   assert.match(admin, /room\.supplies/);
+  assert.match(admin, /elapsedRoomLabel\(team\.enteredAt\)/);
   assert.match(check, /saveTeamState/);
   assert.match(check, /teamName/);
   assert.match(vercel, /"icn1"/);

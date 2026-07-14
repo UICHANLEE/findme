@@ -58,8 +58,10 @@ button { cursor: pointer; }
 .occupancy { border-top: 1px solid var(--line); margin-top: 27px; padding-top: 18px; font-size: 11px; color: #77746b; }
 .occupancy span { font: 800 24px var(--font-geist-mono); color: var(--accent); }
 .team-dots { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 14px; }
-.team-dots span { font-size: 10px; font-weight: 700; border: 1px solid var(--line); padding: 5px 8px; border-radius: 20px; color: #8c897f; }
-.team-dots span.active { color: white; background: var(--accent); border-color: var(--accent); }
+.team-dots span { font-size: 10px; font-weight: 700; border: 1px solid var(--line); padding: 6px 9px; border-radius: 20px; color: #8c897f; }
+.team-dots span.active { display: inline-grid; gap: 1px; color: white; background: var(--accent); border-color: var(--accent); }
+.team-dots span b { font-size: 10px; }
+.team-dots span small { color: rgba(255,255,255,.72); font: 500 8px var(--font-geist-mono); }
 .team-dots em { color: #a09d94; font-size: 10px; font-style: normal; }
 footer { border-top: 1px solid var(--line); display: flex; align-items: center; padding: 24px 5.5vw; font-size: 11px; color: #77746b; }
 footer span { font-size: 14px; font-weight: 900; color: var(--ink); }

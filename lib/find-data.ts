@@ -36,6 +36,12 @@ export const rooms = [
 export const getRoom = (key: string | null) => rooms.find((room) => room.key === key);
 export const cleanTeamName = (name: string) => name.trim().replace(/\s+/g, " ");
 export const teamKey = (name: string) => cleanTeamName(name).toLocaleLowerCase("ko-KR");
+export const elapsedRoomLabel = (enteredAt: string | null, now = Date.now()) => {
+  if (!enteredAt) return "";
+  const elapsed = Math.max(0, now - new Date(enteredAt).getTime());
+  const minutes = Math.floor(elapsed / 60_000);
+  return minutes < 1 ? "방금 입장" : `입장 ${minutes}분째`;
+};
 
 export type TeamState = {
   teamId: string;

@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { rooms, teamKey, type TeamState } from "../lib/find-data";
+import { elapsedRoomLabel, rooms, teamKey, type TeamState } from "../lib/find-data";
 
 export default function Home() {
   return <Suspense fallback={<main className="home-shell" />}><HomeContent /></Suspense>;
@@ -105,7 +105,7 @@ function HomeContent() {
                 <h3>{room.name}</h3>
                 <p>{room.location}</p>
                 <div className="occupancy"><span>{inside.length}</span> / {room.maxTeams}개 조 활동 중</div>
-                <div className="team-dots">{inside.length ? inside.map((team) => <span className="active" key={team.teamId}>{team.teamName}</span>) : <em>입장한 조가 없어요</em>}</div>
+                <div className="team-dots">{inside.length ? inside.map((team) => <span className="active" key={team.teamId}><b>{team.teamName}</b><small>{elapsedRoomLabel(team.enteredAt)}</small></span>) : <em>입장한 조가 없어요</em>}</div>
               </article>
             );
           })}

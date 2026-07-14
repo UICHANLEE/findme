@@ -13,6 +13,8 @@ test("participant and themed-room experiences are present", async () => {
   ]);
   assert.match(home, /우리는 지금/);
   assert.match(home, /\/api\/status/);
+  assert.match(home, /방을 찾으러 다니는 중/);
+  assert.match(home, /team\.teamName/);
   assert.match(room, /퇴장 QR/);
   for (const name of ["눈으로 find", "소리로 find", "몸으로 find", "마음으로 find", "은혜로 find"]) assert.match(data, new RegExp(name));
 });
@@ -28,6 +30,7 @@ test("administrator, QR, persistence, and deployment output are present", async 
   assert.match(admin, /운영 Q-sheet/);
   assert.match(admin, /room\.supplies/);
   assert.match(check, /team_state/);
+  assert.match(check, /teamName/);
   assert.match(hosting, /"d1": "DB"/);
   await access(new URL("dist/server/index.js", root));
   await access(new URL("dist/.openai/drizzle/0000_wide_slipstream.sql", root));

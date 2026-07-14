@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import QRCode from "qrcode";
-import { rooms, teams, type RoomKey, type TeamState } from "../../lib/find-data";
+import { rooms, type TeamState } from "../../lib/find-data";
 
 type Tab = "status" | "guide" | "qr";
 
@@ -21,9 +21,8 @@ export default function AdminPage() {
     Promise.all(rooms.flatMap((room) => (["enter", "exit"] as const).map(async (action) => [`${room.key}-${action}`, await QRCode.toDataURL(`${window.location.origin}/scan?room=${room.key}&action=${action}`, { width: 440, margin: 2, color: { dark: "#171713", light: "#ffffff" } })] as const))).then((pairs) => setQrCodes(Object.fromEntries(pairs)));
   }, []);
 
-  const updateTeam = async (teamId: string, room: RoomKey | null) => {
-    const team = teams.find((item) => item.id === teamId)!;
-    await fetch("/api/check", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ teamId, room: room || team.room, action: room ? "enter" : "exit" }) });
+  const exitTeam = async (teamName: string, room: string) => {
+    await fetch("/api/check", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ teamName, room, action: "exit" }) });
     load();
   };
   const reset = async () => { if (!confirm("모든 조의 입장 상태를 초기화할까요?")) return; await fetch("/api/reset", { method: "POST" }); load(); };
@@ -41,11 +40,11 @@ export default function AdminPage() {
         {tab === "status" ? (
           <>
             <div className="admin-heading"><p>각 조의 위치를 한눈에 확인하고 직접 변경할 수 있어요.</p><h1>실시간 방 현황</h1></div>
-            <div className="summary-row"><div><span>전체 조</span><strong>{teams.length}</strong></div><div><span>활동 중</span><strong>{states.filter((s) => s.currentRoom).length}</strong></div><div><span>대기 중</span><strong>{states.filter((s) => !s.currentRoom).length}</strong></div></div>
+            <div className="summary-row"><div><span>등록된 조</span><strong>{states.length}</strong></div><div><span>방에서 활동 중</span><strong>{states.filter((s) => s.currentRoom).length}</strong></div><div><span>방을 찾는 중</span><strong>{states.filter((s) => !s.currentRoom).length}</strong></div></div>
+            <div className="admin-searching"><div><span>↝</span><h2>방을 찾으러 다니는 중..</h2><b>{states.filter((state) => !state.currentRoom).length}개 조</b></div><div className="admin-searching-list">{states.filter((state) => !state.currentRoom).length ? states.filter((state) => !state.currentRoom).map((state) => <span key={state.teamId}>{state.teamName}</span>) : <em>이동 중인 조가 없어요</em>}</div></div>
             <div className="admin-rooms">{rooms.map((room) => {
-              const assignedTeams = teams.filter((team) => team.room === room.key);
-              const inRoom = assignedTeams.filter((team) => states.find((state) => state.teamId === team.id)?.currentRoom === room.key);
-              return <article key={room.key} style={{ "--accent": room.color, "--soft": room.soft } as React.CSSProperties}><div className="admin-room-top"><div className="admin-room-mark">{room.mark}</div><div><h2>{room.name}</h2><p>{room.location}</p></div><strong>{inRoom.length}<span>/{assignedTeams.length}</span></strong></div><div className="admin-team-list">{assignedTeams.map((team) => { const state = states.find((item) => item.teamId === team.id); const active = state?.currentRoom === room.key; return <div key={team.id}><span className={active ? "status-dot active" : "status-dot"} /><b>{team.label}</b><small>{active ? "활동 중" : "대기 중"}</small><button onClick={() => updateTeam(team.id, active ? null : room.key)}>{active ? "퇴장" : "입장"}</button></div>; })}</div></article>;
+              const inRoom = states.filter((state) => state.currentRoom === room.key);
+              return <article key={room.key} style={{ "--accent": room.color, "--soft": room.soft } as React.CSSProperties}><div className="admin-room-top"><div className="admin-room-mark">{room.mark}</div><div><h2>{room.name}</h2><p>{room.location}</p></div><strong>{inRoom.length}<span>/{room.maxTeams}</span></strong></div><div className="admin-team-list">{inRoom.length ? inRoom.map((team) => <div key={team.teamId}><span className="status-dot active" /><b>{team.teamName}</b><small>활동 중</small><button onClick={() => exitTeam(team.teamName, room.key)}>퇴장</button></div>) : <div className="admin-empty">아직 배정된 조가 없어요</div>}</div></article>;
             })}</div>
           </>
         ) : tab === "guide" ? (

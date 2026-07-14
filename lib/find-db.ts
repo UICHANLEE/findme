@@ -6,6 +6,7 @@ export async function ensureTables() {
   await db.batch([
     db.prepare(`CREATE TABLE IF NOT EXISTS team_state (
       team_id TEXT PRIMARY KEY,
+      team_name TEXT,
       current_room TEXT,
       entered_at TEXT,
       updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP

@@ -2,20 +2,20 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { getRoom, getTeam, type TeamState } from "../../../lib/find-data";
+import { getRoom, teamKey, type TeamState } from "../../../lib/find-data";
 
 export default function RoomPage() {
   const params = useParams<{ slug: string }>();
   const query = useSearchParams();
   const router = useRouter();
   const room = getRoom(params.slug);
-  const teamId = query.get("team") || "";
-  const team = getTeam(teamId);
+  const teamName = query.get("team") || "";
+  const teamId = teamKey(teamName);
   const [enteredAt, setEnteredAt] = useState<string | null>(null);
   const [seconds, setSeconds] = useState(0);
 
   useEffect(() => {
-    if (teamId) localStorage.setItem("find-team", teamId);
+    if (teamName) localStorage.setItem("find-team", teamName);
     let active = true;
     const load = async () => {
       try {
@@ -23,13 +23,13 @@ export default function RoomPage() {
         const data = await response.json() as { states?: TeamState[] };
         const state = data.states?.find((item) => item.teamId === teamId);
         if (!active || !state) return;
-        if (state.currentRoom !== params.slug) router.replace(`/?team=${teamId}`);
+        if (state.currentRoom !== params.slug) router.replace(`/?team=${encodeURIComponent(state.teamName)}`);
         setEnteredAt(state.enteredAt);
       } catch { /* next poll retries */ }
     };
     load(); const timer = setInterval(load, 2000);
     return () => { active = false; clearInterval(timer); };
-  }, [params.slug, router, teamId]);
+  }, [params.slug, router, teamId, teamName]);
 
   useEffect(() => {
     const update = () => setSeconds(enteredAt ? Math.max(0, Math.floor((Date.now() - new Date(enteredAt).getTime()) / 1000)) : 0);
@@ -42,7 +42,7 @@ export default function RoomPage() {
 
   return (
     <main className={`experience experience-${room.key}`} style={{ "--accent": room.color, "--soft": room.soft } as React.CSSProperties}>
-      <header><a href={`/?team=${teamId}`}>FIND<span>:</span>US</a><div className="live-badge"><i /> LIVE</div></header>
+      <header><a href={`/?team=${encodeURIComponent(teamName)}`}>FIND<span>:</span>US</a><div className="live-badge"><i /> LIVE</div></header>
       <div className="experience-mark" aria-hidden="true">{room.mark}</div>
       <section className="experience-copy">
         <div className="room-location">ROOM {roomsIndex(room.key)} · {room.location}</div>
@@ -50,7 +50,7 @@ export default function RoomPage() {
         <p>{room.prompt}</p>
       </section>
       <section className="experience-bottom">
-        <div className="team-ticket"><span>NOW ENTERED</span><strong>{team?.label || "조 정보 없음"}</strong><small>조원 모두의 화면이 연결되었어요</small></div>
+        <div className="team-ticket"><span>NOW ENTERED</span><strong>{teamName || "조 정보 없음"}</strong><small>우리 조 이름이 이 방에 배정되었어요</small></div>
         <div className="timer"><span>함께한 시간</span><strong>{mins}<i>:</i>{secs}</strong></div>
         <div className="prompt-list">{room.steps.map((message, index) => <div key={message}><b>0{index + 1}</b><span>{message}</span></div>)}</div>
       </section>

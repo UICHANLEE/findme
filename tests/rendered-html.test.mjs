@@ -20,19 +20,18 @@ test("participant and themed-room experiences are present", async () => {
 });
 
 test("administrator, QR, persistence, and deployment output are present", async () => {
-  const [admin, check, hosting] = await Promise.all([
-    read("app/admin/page.tsx"),
+  const [admin, check, vercel] = await Promise.all([
+    read("app/jaegunadmin.html/page.tsx"),
     read("app/api/check/route.ts"),
-    read(".openai/hosting.json"),
+    read("vercel.json"),
   ]);
   assert.match(admin, /QRCode\.toDataURL/);
   assert.match(admin, /전체 초기화/);
   assert.match(admin, /운영 Q-sheet/);
   assert.match(admin, /room\.supplies/);
-  assert.match(check, /team_state/);
+  assert.match(check, /saveTeamState/);
   assert.match(check, /teamName/);
-  assert.match(hosting, /"d1": "DB"/);
-  await access(new URL("dist/server/index.js", root));
-  await access(new URL("dist/.openai/drizzle/0000_wide_slipstream.sql", root));
+  assert.match(vercel, /"icn1"/);
+  await access(new URL(".next/BUILD_ID", root));
   await access(new URL("public/og.png", root));
 });

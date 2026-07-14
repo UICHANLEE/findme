@@ -1,10 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { getRoom, teamKey, type TeamState } from "../../../lib/find-data";
 
 export default function RoomPage() {
+  return <Suspense fallback={<main className="experience" />}><RoomContent /></Suspense>;
+}
+
+function RoomContent() {
   const params = useParams<{ slug: string }>();
   const query = useSearchParams();
   const router = useRouter();

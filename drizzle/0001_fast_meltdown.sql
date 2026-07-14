@@ -1,1 +1,0 @@
-ALTER TABLE `team_state` ADD `team_name` text;

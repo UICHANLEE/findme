@@ -1,10 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { cleanTeamName, getRoom } from "../../lib/find-data";
 
 export default function ScanPage() {
+  return <Suspense fallback={<main className="scan-shell" />}><ScanContent /></Suspense>;
+}
+
+function ScanContent() {
   const params = useSearchParams();
   const router = useRouter();
   const room = getRoom(params.get("room"));

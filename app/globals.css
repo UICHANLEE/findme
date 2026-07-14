@@ -23,6 +23,7 @@ button { cursor: pointer; }
 .team-picker span { width: 90px; font-size: 12px; font-weight: 800; }
 .team-picker input { flex: 1; border: 0; outline: 0; background: transparent; font-size: 20px; font-weight: 750; color: var(--ink); min-width: 0; }
 .team-picker input::placeholder { color: #a4a096; font-weight: 550; }
+.team-picker button { border: 0; background: var(--ink); color: var(--paper); padding: 11px 15px; border-radius: 4px; font-size: 11px; font-weight: 800; white-space: nowrap; }
 .waiting { display: flex; align-items: center; gap: 9px; margin-top: 17px; color: #737066; font-size: 12px; font-weight: 650; }
 .waiting.journey { color: #f05335; }
 .pulse { width: 7px; height: 7px; background: #1d9a6c; border-radius: 50%; box-shadow: 0 0 0 5px rgba(29,154,108,.13); animation: pulse 1.4s infinite; }
@@ -185,6 +186,9 @@ footer b { margin-left: auto; color: #1d9a6c; }
   .hero::after { font-size: 190px; top: 80px; right: -35px; }
   .hero h1 { font-size: 52px; margin-top: 28px; }
   .hero > p { font-size: 14px; }
+  .team-picker span { width: 66px; }
+  .team-picker input { font-size: 15px; }
+  .team-picker button { padding: 10px 11px; }
   .room-overview { padding: 70px 22px 80px; }
   .searching-zone { grid-template-columns: 38px 1fr auto; padding: 19px; gap: 12px; }
   .searching-teams { grid-column: 1 / -1; justify-content: flex-start; padding-top: 12px; border-top: 1px solid #47463f; }

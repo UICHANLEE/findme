@@ -1,19 +1,25 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { rooms, teamKey, type TeamState } from "../lib/find-data";
 
 export default function Home() {
+  return <Suspense fallback={<main className="home-shell" />}><HomeContent /></Suspense>;
+}
+
+function HomeContent() {
   const router = useRouter();
   const params = useSearchParams();
   const [teamName, setTeamName] = useState("");
+  const [teamDraft, setTeamDraft] = useState("");
   const [states, setStates] = useState<TeamState[]>([]);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
     const name = params.get("team") || localStorage.getItem("find-team") || "";
     setTeamName(name);
+    setTeamDraft(name);
     setReady(true);
   }, [params]);
 
@@ -36,10 +42,12 @@ export default function Home() {
     if (ready && teamName && myState?.currentRoom) router.replace(`/room/${myState.currentRoom}?team=${encodeURIComponent(myState.teamName)}`);
   }, [myState?.currentRoom, myState?.teamName, ready, router, teamName]);
 
-  const saveTeam = (value: string) => {
+  const connectTeam = (event: React.FormEvent) => {
+    event.preventDefault();
+    const value = teamDraft.trim().replace(/\s+/g, " ");
+    if (!value) return;
     setTeamName(value);
-    if (value.trim()) localStorage.setItem("find-team", value.trim());
-    else localStorage.removeItem("find-team");
+    localStorage.setItem("find-team", value);
   };
   const searching = states.filter((state) => !state.currentRoom);
 
@@ -47,17 +55,18 @@ export default function Home() {
     <main className="home-shell">
       <header className="topbar">
         <a className="wordmark" href="/">FIND<span>:</span>US</a>
-        <a className="admin-link" href="/admin">관리자</a>
+        <a className="admin-link" href="/jaegunadmin.html">관리자</a>
       </header>
 
       <section className="hero">
         <div className="eyebrow"><i /> 2026 FIND JOURNEY</div>
         <h1>우리는 지금,<br /><em>무엇을 찾고 있나요?</em></h1>
-        <p>우리 조 이름을 입력해 두세요. 조장이 QR을 스캔하면<br className="mobile-break" /> 조원 모두의 화면이 함께 바뀝니다.</p>
-        <label className="team-picker">
+        <p>모든 조원이 같은 조 이름을 입력해 연결해 두세요.<br className="mobile-break" /> 조장이 방 QR을 스캔하면 우리 조 전체 화면의 테마가 함께 바뀝니다.</p>
+        <form className="team-picker" onSubmit={connectTeam}>
           <span>우리 조</span>
-          <input value={teamName} onChange={(event) => saveTeam(event.target.value)} placeholder="조 이름을 입력해 주세요" maxLength={24} aria-label="우리 조 이름" />
-        </label>
+          <input value={teamDraft} onChange={(event) => setTeamDraft(event.target.value)} placeholder="모두 같은 조 이름을 입력해 주세요" maxLength={24} aria-label="우리 조 이름" />
+          <button type="submit">조 연결</button>
+        </form>
         {teamName && <div className={`waiting ${myState ? "journey" : ""}`}><span className="pulse" /> {myState ? "방을 찾으러 다니는 중.." : "입장 QR을 스캔하면 여정이 시작돼요"}</div>}
       </section>
 

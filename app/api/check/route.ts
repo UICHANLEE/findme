@@ -18,6 +18,17 @@ export async function POST(request: Request) {
     if (body.action === "exit" && !existing) {
       return Response.json({ error: "이 조 이름의 입장 기록을 찾지 못했어요." }, { status: 404 });
     }
+    if (body.action === "enter") {
+      const otherTeamsInside = states.filter((state) => state.currentRoom === room.key && state.teamId !== teamId).length;
+      if (otherTeamsInside >= room.maxTeams) {
+        return Response.json({
+          code: "ROOM_FULL",
+          error: `${room.name}은 현재 입장 가능한 조가 모두 찼어요. 다른 방을 찾아가세요!!`,
+          room: room.key,
+          maxTeams: room.maxTeams,
+        }, { status: 409 });
+      }
+    }
 
     const now = new Date().toISOString();
     const next: TeamState = {

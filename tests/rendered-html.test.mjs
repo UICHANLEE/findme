@@ -37,10 +37,11 @@ test("administrator, QR, persistence, and deployment output are present", async 
 });
 
 test("in-app camera scans a saved team's QR without another name prompt", async () => {
-  const [home, scanner, scan] = await Promise.all([
+  const [home, scanner, scan, check] = await Promise.all([
     read("app/page.tsx"),
     read("app/scanner/page.tsx"),
     read("app/scan/page.tsx"),
+    read("app/api/check/route.ts"),
   ]);
   assert.match(home, /처음 한 번만/);
   assert.match(home, /href="\/scanner"/);
@@ -50,4 +51,8 @@ test("in-app camera scans a saved team's QR without another name prompt", async 
   assert.match(scanner, /window\.location\.origin/);
   assert.match(scan, /localStorage\.getItem\("find-team"\)/);
   assert.doesNotMatch(scan, /입장할 조 이름을 적어 주세요/);
+  assert.match(check, /ROOM_FULL/);
+  assert.match(check, /otherTeamsInside >= room\.maxTeams/);
+  assert.match(scanner, /window\.alert/);
+  assert.doesNotMatch(home, /jaegunadmin\.html/);
 });

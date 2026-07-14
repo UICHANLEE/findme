@@ -66,7 +66,6 @@ function HomeContent() {
     <main className="home-shell">
       <header className="topbar">
         <Link className="wordmark" href="/">FIND<span>:</span>US</Link>
-        <Link className="admin-link" href="/jaegunadmin.html">관리자</Link>
       </header>
 
       <section className="hero">

@@ -6,7 +6,9 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { cleanTeamName, getRoom } from "../../lib/find-data";
 
-type CameraState = "starting" | "scanning" | "processing" | "error";
+type CameraState = "starting" | "scanning" | "processing" | "success" | "error";
+
+const pause = (milliseconds: number) => new Promise((resolve) => window.setTimeout(resolve, milliseconds));
 
 export default function ScannerPage() {
   const router = useRouter();
@@ -54,10 +56,18 @@ export default function ScannerPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ teamName: savedTeam, room: room.key, action }),
       });
-      const data = await response.json() as { error?: string; teamName?: string };
+      const data = await response.json() as { code?: string; error?: string; teamName?: string };
+      if (data.code === "ROOM_FULL") {
+        window.alert(data.error || "현재 입장 가능한 조가 모두 찼어요. 다른 방을 찾아가세요!!");
+        router.replace("/");
+        return;
+      }
       if (!response.ok) throw new Error(data.error || "처리하지 못했습니다.");
       const confirmedTeam = data.teamName || savedTeam;
       localStorage.setItem("find-team", confirmedTeam);
+      setCameraState("success");
+      setMessage(action === "enter" ? `${room.name} 입장이 완료됐어요!` : "퇴장이 완료됐어요. 다음 방을 찾아볼까요?");
+      await pause(850);
       router.replace(action === "enter" ? `/room/${room.key}?team=${encodeURIComponent(confirmedTeam)}&welcome=1` : `/?team=${encodeURIComponent(confirmedTeam)}`);
     } catch (caught) {
       busyRef.current = false;
@@ -130,8 +140,8 @@ export default function ScannerPage() {
         <div>{teamName || "우리 조"}</div>
       </header>
       <section className="camera-guide">
-        <div className="camera-frame"><i /><i /><i /><i /><span>{cameraState === "processing" ? "✓" : ""}</span></div>
-        <p><b>{cameraState === "processing" ? "QR을 확인했어요" : cameraState === "error" ? "카메라 확인이 필요해요" : "QR을 비춰 주세요"}</b>{message}</p>
+        <div className="camera-frame"><i /><i /><i /><i /><span>{cameraState === "success" ? "✓" : ""}</span></div>
+        <p><b>{cameraState === "success" ? "반영 완료!" : cameraState === "processing" ? "QR을 확인했어요" : cameraState === "error" ? "카메라 확인이 필요해요" : "QR을 비춰 주세요"}</b>{message}</p>
         {cameraState === "error" && <button type="button" onClick={retry}>카메라 다시 열기</button>}
       </section>
       <div className="camera-footer"><span className={cameraState === "scanning" ? "active" : ""} /> 스캔하면 별도 확인 없이 바로 반영됩니다</div>

@@ -35,3 +35,19 @@ test("administrator, QR, persistence, and deployment output are present", async 
   await access(new URL(".next/BUILD_ID", root));
   await access(new URL("public/favicon.svg", root));
 });
+
+test("in-app camera scans a saved team's QR without another name prompt", async () => {
+  const [home, scanner, scan] = await Promise.all([
+    read("app/page.tsx"),
+    read("app/scanner/page.tsx"),
+    read("app/scan/page.tsx"),
+  ]);
+  assert.match(home, /처음 한 번만/);
+  assert.match(home, /href="\/scanner"/);
+  assert.match(scanner, /BrowserQRCodeReader/);
+  assert.match(scanner, /facingMode/);
+  assert.match(scanner, /\/api\/check/);
+  assert.match(scanner, /window\.location\.origin/);
+  assert.match(scan, /localStorage\.getItem\("find-team"\)/);
+  assert.doesNotMatch(scan, /입장할 조 이름을 적어 주세요/);
+});

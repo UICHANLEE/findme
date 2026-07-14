@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { getRoom, teamKey, type TeamState } from "../../../lib/find-data";
 
 export default function RoomPage() {
@@ -31,7 +32,7 @@ function RoomContent() {
         setEnteredAt(state.enteredAt);
       } catch { /* next poll retries */ }
     };
-    load(); const timer = setInterval(load, 2000);
+    load(); const timer = setInterval(load, 1000);
     return () => { active = false; clearInterval(timer); };
   }, [params.slug, router, teamId, teamName]);
 
@@ -40,13 +41,13 @@ function RoomContent() {
     update(); const timer = setInterval(update, 1000); return () => clearInterval(timer);
   }, [enteredAt]);
 
-  if (!room) return <main className="scan-error"><h1>존재하지 않는 방입니다.</h1><a href="/">돌아가기</a></main>;
+  if (!room) return <main className="scan-error"><h1>존재하지 않는 방입니다.</h1><Link href="/">돌아가기</Link></main>;
   const mins = String(Math.floor(seconds / 60)).padStart(2, "0");
   const secs = String(seconds % 60).padStart(2, "0");
 
   return (
     <main className={`experience experience-${room.key}`} style={{ "--accent": room.color, "--soft": room.soft } as React.CSSProperties}>
-      <header><a href={`/?team=${encodeURIComponent(teamName)}`}>FIND<span>:</span>US</a><div className="live-badge"><i /> LIVE</div></header>
+      <header><Link href={`/?team=${encodeURIComponent(teamName)}`}>FIND<span>:</span>US</Link><div className="room-header-actions"><Link className="room-scan-button" href="/scanner">▣ QR 스캔</Link><div className="live-badge"><i /> LIVE</div></div></header>
       <div className="experience-mark" aria-hidden="true">{room.mark}</div>
       <section className="experience-copy">
         <div className="room-location">ROOM {roomsIndex(room.key)} · {room.location}</div>
@@ -58,7 +59,7 @@ function RoomContent() {
         <div className="timer"><span>함께한 시간</span><strong>{mins}<i>:</i>{secs}</strong></div>
         <div className="prompt-list">{room.steps.map((message, index) => <div key={message}><b>0{index + 1}</b><span>{message}</span></div>)}</div>
       </section>
-      <div className="exit-guide">활동이 끝나면 출구의 <b>퇴장 QR</b>을 스캔해 주세요.</div>
+      <div className="exit-guide">활동이 끝나면 <Link href="/scanner">카메라를 열어</Link> 출구의 <b>퇴장 QR</b>을 스캔해 주세요.</div>
     </main>
   );
 }

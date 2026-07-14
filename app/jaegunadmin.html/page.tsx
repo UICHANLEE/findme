@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import QRCode from "qrcode";
 import { rooms, type TeamState } from "../../lib/find-data";
 
@@ -15,7 +16,7 @@ export default function AdminPage() {
   const load = async () => {
     try { const response = await fetch("/api/status", { cache: "no-store" }); const data = await response.json() as { states?: TeamState[] }; if (data.states) { setStates(data.states); setUpdated(new Date()); } } catch { /* next poll retries */ }
   };
-  useEffect(() => { load(); const timer = setInterval(load, 2000); return () => clearInterval(timer); }, []);
+  useEffect(() => { const first = window.setTimeout(load, 0); const timer = setInterval(load, 1000); return () => { clearTimeout(first); clearInterval(timer); }; }, []);
   useEffect(() => {
     if (typeof window === "undefined") return;
     Promise.all(rooms.flatMap((room) => (["enter", "exit"] as const).map(async (action) => [`${room.key}-${action}`, await QRCode.toDataURL(`${window.location.origin}/scan?room=${room.key}&action=${action}`, { width: 440, margin: 2, color: { dark: "#171713", light: "#ffffff" } })] as const))).then((pairs) => setQrCodes(Object.fromEntries(pairs)));
@@ -30,10 +31,10 @@ export default function AdminPage() {
   return (
     <main className="admin-shell">
       <aside>
-        <a className="wordmark" href="/">FIND<span>:</span>US</a>
+        <Link className="wordmark" href="/">FIND<span>:</span>US</Link>
         <div className="admin-title"><span>CONTROL ROOM</span><strong>관리자</strong></div>
         <nav><button className={tab === "status" ? "active" : ""} onClick={() => setTab("status")}><span>01</span> 실시간 현황</button><button className={tab === "guide" ? "active" : ""} onClick={() => setTab("guide")}><span>02</span> 운영 Q-sheet</button><button className={tab === "qr" ? "active" : ""} onClick={() => setTab("qr")}><span>03</span> QR 코드</button></nav>
-        <a className="back-home" href="/">← 참가자 화면</a>
+        <Link className="back-home" href="/">← 참가자 화면</Link>
       </aside>
       <section className="admin-main">
         <header><div><span className="live-badge"><i /> LIVE</span><small>{updated ? `${updated.toLocaleTimeString("ko-KR")} 업데이트` : "연결 중"}</small></div>{tab === "status" && <button className="reset-button" onClick={reset}>전체 초기화</button>}</header>

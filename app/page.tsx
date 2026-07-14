@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { rooms, teamKey, type TeamState } from "../lib/find-data";
 
 export default function Home() {
@@ -17,10 +18,13 @@ function HomeContent() {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    const name = params.get("team") || localStorage.getItem("find-team") || "";
-    setTeamName(name);
-    setTeamDraft(name);
-    setReady(true);
+    const timer = window.setTimeout(() => {
+      const name = params.get("team") || localStorage.getItem("find-team") || "";
+      setTeamName(name);
+      setTeamDraft(name);
+      setReady(true);
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [params]);
 
   useEffect(() => {
@@ -33,7 +37,7 @@ function HomeContent() {
       } catch { /* next poll retries */ }
     };
     load();
-    const timer = setInterval(load, 2000);
+    const timer = setInterval(load, 1000);
     return () => { active = false; clearInterval(timer); };
   }, []);
 
@@ -48,25 +52,39 @@ function HomeContent() {
     if (!value) return;
     setTeamName(value);
     localStorage.setItem("find-team", value);
+    const next = params.get("next");
+    if (next?.startsWith("/scan?")) router.push(next);
+  };
+  const changeTeam = () => {
+    localStorage.removeItem("find-team");
+    setTeamName("");
+    setTeamDraft("");
   };
   const searching = states.filter((state) => !state.currentRoom);
 
   return (
     <main className="home-shell">
       <header className="topbar">
-        <a className="wordmark" href="/">FIND<span>:</span>US</a>
-        <a className="admin-link" href="/jaegunadmin.html">관리자</a>
+        <Link className="wordmark" href="/">FIND<span>:</span>US</Link>
+        <Link className="admin-link" href="/jaegunadmin.html">관리자</Link>
       </header>
 
       <section className="hero">
         <div className="eyebrow"><i /> 2026 FIND JOURNEY</div>
         <h1>우리는 지금,<br /><em>무엇을 찾고 있나요?</em></h1>
-        <p>모든 조원이 같은 조 이름을 입력해 연결해 두세요.<br className="mobile-break" /> 조장이 방 QR을 스캔하면 우리 조 전체 화면의 테마가 함께 바뀝니다.</p>
-        <form className="team-picker" onSubmit={connectTeam}>
-          <span>우리 조</span>
-          <input value={teamDraft} onChange={(event) => setTeamDraft(event.target.value)} placeholder="모두 같은 조 이름을 입력해 주세요" maxLength={24} aria-label="우리 조 이름" />
-          <button type="submit">조 연결</button>
-        </form>
+        <p>처음 한 번만 우리 조 이름을 입력해 주세요.<br className="mobile-break" /> 이후에는 앱 카메라로 QR을 비추면 조원 모두의 화면이 바로 바뀝니다.</p>
+        {ready && !teamName ? (
+          <form className="team-picker" onSubmit={connectTeam}>
+            <span>우리 조</span>
+            <input value={teamDraft} onChange={(event) => setTeamDraft(event.target.value)} placeholder="모두 같은 조 이름을 입력해 주세요" maxLength={24} aria-label="우리 조 이름" autoFocus />
+            <button type="submit">시작하기</button>
+          </form>
+        ) : teamName ? (
+          <div className="team-connected">
+            <div><span>연결된 조</span><strong>{teamName}</strong><button type="button" onClick={changeTeam}>조 변경</button></div>
+            <Link href="/scanner"><span className="camera-icon" aria-hidden="true">▣</span><b>QR 스캔하기</b><small>카메라로 입구·출구 QR을 비춰 주세요</small></Link>
+          </div>
+        ) : null}
         {teamName && <div className={`waiting ${myState ? "journey" : ""}`}><span className="pulse" /> {myState ? "방을 찾으러 다니는 중.." : "입장 QR을 스캔하면 여정이 시작돼요"}</div>}
       </section>
 

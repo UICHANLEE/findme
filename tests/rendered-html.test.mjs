@@ -25,6 +25,8 @@ test("administrator, QR, persistence, and deployment output are present", async 
   ]);
   assert.match(admin, /QRCode\.toDataURL/);
   assert.match(admin, /전체 초기화/);
+  assert.match(admin, /운영 Q-sheet/);
+  assert.match(admin, /room\.supplies/);
   assert.match(check, /team_state/);
   assert.match(hosting, /"d1": "DB"/);
   await access(new URL("dist/server/index.js", root));

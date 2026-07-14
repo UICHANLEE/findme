@@ -127,6 +127,19 @@ footer b { margin-left: auto; color: #1d9a6c; }
 .admin-team-list b { font-size: 12px; }
 .admin-team-list small { font-size: 10px; color: #8a877e; }
 .admin-team-list button { font-size: 10px; font-weight: 700; border: 1px solid var(--line); background: #faf9f6; padding: 6px; border-radius: 3px; }
+.guide-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+.guide-grid article { background: white; border: 1px solid var(--line); padding: 24px; }
+.guide-head { display: flex; align-items: center; gap: 14px; padding-bottom: 20px; border-bottom: 2px solid var(--accent); }
+.guide-head > span { width: 46px; height: 46px; display: grid; place-items: center; background: var(--soft); color: var(--accent); font: 800 12px var(--font-geist-mono); }
+.guide-head h2 { margin: 0 0 3px; font-size: 18px; }
+.guide-head p { margin: 0; color: #858177; font-size: 10px; }
+.guide-head > b { margin-left: auto; padding: 7px 10px; border-radius: 99px; background: var(--soft); color: var(--accent); font-size: 10px; }
+.guide-grid dl { margin: 0; }
+.guide-grid dl > div { display: grid; grid-template-columns: 74px 1fr; padding: 15px 0; border-bottom: 1px solid rgba(23,23,19,.09); }
+.guide-grid dt { color: #88857b; font-size: 10px; font-weight: 700; }
+.guide-grid dd { margin: 0; font-size: 12px; font-weight: 650; line-height: 1.6; }
+.guide-grid dd span { display: flex; align-items: flex-start; gap: 8px; }
+.guide-grid dd i { flex: 0 0 auto; width: 17px; height: 17px; display: grid; place-items: center; border-radius: 50%; background: var(--soft); color: var(--accent); font: normal 700 8px var(--font-geist-mono); margin-top: 3px; }
 .qr-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
 .qr-room-title { display: flex; gap: 14px; align-items: center; margin-bottom: 20px; }
 .qr-room-title > span { width: 48px; height: 48px; display: grid; place-items: center; background: var(--soft); color: var(--accent); font-size: 23px; letter-spacing: -.15em; }
@@ -143,7 +156,7 @@ footer b { margin-left: auto; color: #1d9a6c; }
   .room-card:last-child { grid-column: span 2; }
   .experience-bottom { grid-template-columns: 1fr 1fr; }
   .prompt-list { display: none; }
-  .admin-rooms, .qr-grid { grid-template-columns: 1fr; }
+  .admin-rooms, .qr-grid, .guide-grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 700px) {
   .topbar { height: 68px; padding: 0 22px; }

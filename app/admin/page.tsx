@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import QRCode from "qrcode";
 import { rooms, teams, type RoomKey, type TeamState } from "../../lib/find-data";
 
-type Tab = "status" | "qr";
+type Tab = "status" | "guide" | "qr";
 
 export default function AdminPage() {
   const [tab, setTab] = useState<Tab>("status");
@@ -33,7 +33,7 @@ export default function AdminPage() {
       <aside>
         <a className="wordmark" href="/">FIND<span>:</span>US</a>
         <div className="admin-title"><span>CONTROL ROOM</span><strong>관리자</strong></div>
-        <nav><button className={tab === "status" ? "active" : ""} onClick={() => setTab("status")}><span>01</span> 실시간 현황</button><button className={tab === "qr" ? "active" : ""} onClick={() => setTab("qr")}><span>02</span> QR 코드</button></nav>
+        <nav><button className={tab === "status" ? "active" : ""} onClick={() => setTab("status")}><span>01</span> 실시간 현황</button><button className={tab === "guide" ? "active" : ""} onClick={() => setTab("guide")}><span>02</span> 운영 Q-sheet</button><button className={tab === "qr" ? "active" : ""} onClick={() => setTab("qr")}><span>03</span> QR 코드</button></nav>
         <a className="back-home" href="/">← 참가자 화면</a>
       </aside>
       <section className="admin-main">
@@ -47,6 +47,14 @@ export default function AdminPage() {
               const inRoom = assignedTeams.filter((team) => states.find((state) => state.teamId === team.id)?.currentRoom === room.key);
               return <article key={room.key} style={{ "--accent": room.color, "--soft": room.soft } as React.CSSProperties}><div className="admin-room-top"><div className="admin-room-mark">{room.mark}</div><div><h2>{room.name}</h2><p>{room.location}</p></div><strong>{inRoom.length}<span>/{assignedTeams.length}</span></strong></div><div className="admin-team-list">{assignedTeams.map((team) => { const state = states.find((item) => item.teamId === team.id); const active = state?.currentRoom === room.key; return <div key={team.id}><span className={active ? "status-dot active" : "status-dot"} /><b>{team.label}</b><small>{active ? "활동 중" : "대기 중"}</small><button onClick={() => updateTeam(team.id, active ? null : room.key)}>{active ? "퇴장" : "입장"}</button></div>; })}</div></article>;
             })}</div>
+          </>
+        ) : tab === "guide" ? (
+          <>
+            <div className="admin-heading"><p>제공해 주신 Find It Q-sheet를 방별로 정리했어요.</p><h1>운영 Q-sheet</h1></div>
+            <div className="guide-grid">{rooms.map((room, index) => <article key={room.key} style={{ "--accent": room.color, "--soft": room.soft } as React.CSSProperties}>
+              <div className="guide-head"><span>0{index + 1}</span><div><h2>{room.name}</h2><p>{room.location}</p></div><b>{room.capacity}</b></div>
+              <dl><div><dt>진행자</dt><dd>{room.hosts}</dd></div><div><dt>달란트</dt><dd>{room.reward}</dd></div><div><dt>준비물</dt><dd>{room.supplies.map((item) => <span key={item}>{item}</span>)}</dd></div><div><dt>진행 내용</dt><dd>{room.steps.map((step, stepIndex) => <span key={step}><i>{stepIndex + 1}</i>{step}</span>)}</dd></div></dl>
+            </article>)}</div>
           </>
         ) : (
           <>

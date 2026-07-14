@@ -4,14 +4,6 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { getRoom, getTeam, type TeamState } from "../../../lib/find-data";
 
-const messages = {
-  eyes: ["천천히 둘러보세요.", "서로의 표정을 발견하세요.", "보이는 것 너머를 상상해 보세요."],
-  sound: ["잠시 멈추고 들어보세요.", "가장 가까운 목소리에 귀 기울여요.", "우리의 리듬을 찾아보세요."],
-  body: ["몸을 크게 움직여 보세요.", "옆 사람의 속도에 맞춰요.", "하나의 움직임을 만들어 보세요."],
-  heart: ["지금 마음의 온도는 어떤가요?", "말하지 못한 마음을 떠올려요.", "서로에게 안전한 자리를 내어주세요."],
-  grace: ["오늘 받은 선물을 세어보세요.", "당연하지 않았던 순간을 기억해요.", "감사를 한 문장으로 건네요."],
-};
-
 export default function RoomPage() {
   const params = useParams<{ slug: string }>();
   const query = useSearchParams();
@@ -60,7 +52,7 @@ export default function RoomPage() {
       <section className="experience-bottom">
         <div className="team-ticket"><span>NOW ENTERED</span><strong>{team?.label || "조 정보 없음"}</strong><small>조원 모두의 화면이 연결되었어요</small></div>
         <div className="timer"><span>함께한 시간</span><strong>{mins}<i>:</i>{secs}</strong></div>
-        <div className="prompt-list">{messages[room.key].map((message, index) => <div key={message}><b>0{index + 1}</b><span>{message}</span></div>)}</div>
+        <div className="prompt-list">{room.steps.map((message, index) => <div key={message}><b>0{index + 1}</b><span>{message}</span></div>)}</div>
       </section>
       <div className="exit-guide">활동이 끝나면 출구의 <b>퇴장 QR</b>을 스캔해 주세요.</div>
     </main>

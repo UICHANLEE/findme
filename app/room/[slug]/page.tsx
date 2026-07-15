@@ -30,13 +30,16 @@ function RoomContent() {
         const data = await response.json() as { states?: TeamState[] };
         const state = data.states?.find((item) => item.teamId === teamId);
         if (!active || !state) return;
-        if (state.currentRoom !== params.slug) router.replace(`/?team=${encodeURIComponent(state.teamName)}`);
+        if (state.currentRoom !== params.slug) {
+          const collected = state.completedRooms?.includes(room?.key ?? "eyes");
+          router.replace(`/?team=${encodeURIComponent(state.teamName)}${collected && room ? `&collect=${room.key}` : ""}`);
+        }
         setEnteredAt(state.enteredAt);
       } catch { /* next poll retries */ }
     };
     load(); const timer = setInterval(load, 1000);
     return () => { active = false; clearInterval(timer); };
-  }, [params.slug, router, teamId, teamName]);
+  }, [params.slug, room, router, teamId, teamName]);
 
   useEffect(() => {
     const update = () => setSeconds(enteredAt ? Math.max(0, Math.floor((Date.now() - new Date(enteredAt).getTime()) / 1000)) : 0);

@@ -4,7 +4,7 @@ import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { elapsedRoomLabel, rooms, teamKey, type TeamState } from "../lib/find-data";
+import { elapsedRoomLabel, rooms, teamKey, type RoomKey, type TeamState } from "../lib/find-data";
 
 export default function Home() {
   return <Suspense fallback={<main className="home-shell" />}><HomeContent /></Suspense>;
@@ -66,6 +66,10 @@ function HomeContent() {
     setTeamDraft("");
   };
   const searching = states.filter((state) => !state.currentRoom);
+  const completedRooms = myState?.completedRooms ?? [];
+  const collectParam = params.get("collect") as RoomKey | null;
+  const collectingRoom = rooms.find((room) => room.key === collectParam);
+  const journeyComplete = completedRooms.length === rooms.length;
   const selectedRoom = rooms.find((room) => room.key === selectedRoomKey);
   const selectedInside = selectedRoom ? states.filter((state) => state.currentRoom === selectedRoom.key) : [];
   const moveHeroArt = (event: React.PointerEvent<HTMLDivElement>) => {
@@ -110,7 +114,19 @@ function HomeContent() {
           ) : null}
           {teamName && <div className={`waiting ${myState ? "journey" : ""}`}><span className="pulse" /> {myState ? "방을 찾으러 다니는 중.." : "입장 QR을 스캔하면 여정이 시작돼요"}</div>}
         </div>
-        <div className="hero-art" onPointerMove={moveHeroArt} onPointerLeave={resetHeroArt}><Image src="/find-journey-hero.jpg" alt="십자가를 찾아가는 손그림 미로와 돋보기" width={1536} height={1024} unoptimized priority /></div>
+        <div className={`hero-art journey-board ${journeyComplete ? "journey-complete" : ""}`} onPointerMove={moveHeroArt} onPointerLeave={resetHeroArt}>
+          <div className="journey-board-heading"><span>OUR FIND POSTER</span><strong>{teamName || "우리 조"}</strong><b>{completedRooms.length}<small> / 5</small></b></div>
+          <div className="journey-canvas">
+            <Image className="journey-base" src="/collection/maze-base.jpg" alt="다섯 요소를 모아 완성하는 손그림 미로 포스터" width={900} height={900} unoptimized priority />
+            {rooms.map((room) => {
+              const collected = completedRooms.includes(room.key) || collectingRoom?.key === room.key;
+              return <Image key={room.key} className={`journey-artifact artifact-${room.key} ${collected ? "collected" : ""} ${collectingRoom?.key === room.key ? "arriving" : ""}`} src={room.collectionAsset} alt={collected ? `${room.artifactName} 획득 완료` : `${room.artifactName} 미획득`} width={600} height={600} />;
+            })}
+            {journeyComplete && <div className="journey-finale"><span>FIND IT!</span><strong>다섯 요소를 모두 찾았어요</strong></div>}
+          </div>
+          <div className="artifact-legend">{rooms.map((room) => <span className={completedRooms.includes(room.key) || collectingRoom?.key === room.key ? "done" : ""} key={room.key}><Image src={room.emblem} alt="" width={42} height={42} /><b>{room.artifactName}</b></span>)}</div>
+          {collectingRoom && <div className="collection-toast" style={{ "--accent": collectingRoom.color } as React.CSSProperties}><span>NEW FIND</span><strong>{collectingRoom.artifactName}</strong><small>{collectingRoom.name}에서 포스터로 이동했어요</small></div>}
+        </div>
       </section>
 
       <section className="room-overview" aria-label="방별 실시간 현황">

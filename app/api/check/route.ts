@@ -31,12 +31,16 @@ export async function POST(request: Request) {
     }
 
     const now = new Date().toISOString();
+    const previousCompleted = existing?.completedRooms ?? [];
+    const collectedNow = body.action === "exit" && !previousCompleted.includes(room.key);
+    const completedRooms = collectedNow ? [...previousCompleted, room.key] : previousCompleted;
     const next: TeamState = {
       teamId,
       teamName,
       currentRoom: body.action === "enter" ? room.key : null,
       enteredAt: body.action === "enter" ? now : null,
       updatedAt: now,
+      completedRooms,
     };
     await saveTeamState(next);
     const durationSeconds = body.action === "exit" && existing?.enteredAt
@@ -53,7 +57,16 @@ export async function POST(request: Request) {
         durationSeconds,
       });
     } catch { /* live room state remains the priority if log persistence is temporarily unavailable */ }
-    return Response.json({ ok: true, teamId, teamName, room: room.key, action: body.action });
+    return Response.json({
+      ok: true,
+      teamId,
+      teamName,
+      room: room.key,
+      action: body.action,
+      collectedRoom: collectedNow ? room.key : null,
+      completedRooms,
+      journeyComplete: completedRooms.length === 5,
+    });
   } catch (error) {
     return Response.json({ error: error instanceof Error ? error.message : "처리하지 못했습니다." }, { status: 500 });
   }

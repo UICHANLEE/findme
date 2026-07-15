@@ -21,6 +21,10 @@ test("participant and themed-room experiences are present", async () => {
   assert.match(home, /selectedRoomKey/);
   assert.match(home, /room-focus/);
   assert.match(home, /moveHeroArt/);
+  assert.match(home, /journey-board/);
+  assert.match(home, /journey-artifact/);
+  assert.match(home, /collection\/maze-base\.jpg/);
+  assert.match(home, /collectingRoom/);
   assert.match(room, /퇴장 QR/);
   assert.match(room, /room-threshold/);
   for (const name of ["눈으로 find", "소리로 find", "몸으로 find", "마음으로 find", "은혜로 find"]) assert.match(data, new RegExp(name));
@@ -45,6 +49,9 @@ test("administrator, QR, persistence, and deployment output are present", async 
   assert.match(check, /saveTeamState/);
   assert.match(check, /appendActivityLog/);
   assert.match(check, /teamName/);
+  assert.match(check, /completedRooms/);
+  assert.match(check, /collectedRoom/);
+  assert.match(check, /journeyComplete/);
   assert.match(logs, /getActivityLogs/);
   assert.match(logs, /text\/csv/);
   assert.match(logs, /Content-Disposition/);
@@ -52,6 +59,9 @@ test("administrator, QR, persistence, and deployment output are present", async 
   assert.match(vercel, /"icn1"/);
   await access(new URL(".next/BUILD_ID", root));
   await access(new URL("public/favicon.svg", root));
+  await access(new URL("public/collection/maze-base.jpg", root));
+  await access(new URL("public/collection/sound-passage.jpg", root));
+  for (const key of ["eyes", "sound", "body", "heart", "grace"]) await access(new URL(`public/emblems/${key}.webp`, root));
 });
 
 test("in-app camera scans a saved team's QR without another name prompt", async () => {
@@ -72,6 +82,7 @@ test("in-app camera scans a saved team's QR without another name prompt", async 
   assert.match(check, /ROOM_FULL/);
   assert.match(check, /otherTeamsInside >= room\.maxTeams/);
   assert.match(scanner, /window\.alert/);
+  assert.match(scanner, /data\.collectedRoom/);
   assert.match(scanner, /camera-\$\{transition\.action\}/);
   assert.doesNotMatch(home, /jaegunadmin\.html/);
 });

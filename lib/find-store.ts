@@ -12,7 +12,9 @@ function getFindCache() {
 
 export async function getTeamStates(): Promise<TeamState[]> {
   const value = await getFindCache().get(STATE_KEY);
-  return Array.isArray(value) ? value as TeamState[] : [];
+  return Array.isArray(value)
+    ? (value as TeamState[]).map((state) => ({ ...state, completedRooms: Array.isArray(state.completedRooms) ? state.completedRooms : [] }))
+    : [];
 }
 
 export async function saveTeamState(next: TeamState) {

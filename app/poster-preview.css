@@ -48,6 +48,7 @@
   .hero blockquote { font-size: 18px; }
   .hero-copy > p { font-size: 12px; }
   .hero-art { aspect-ratio: 3 / 2; }
+  .hero-art.journey-board { aspect-ratio: auto; }
   .scribble-line { margin-bottom: 18px; }
   .team-picker { width: 100%; }
   .hero-art { pointer-events: none; }
@@ -59,5 +60,5 @@
 
 @media (prefers-reduced-motion: reduce) {
   .hero-art, .room-card, .room-focus-actions a, .room-focus-actions button { transition: none; transform: none; }
-  .team-connected.arrived, .room-focus { animation: none; }
+  .team-connected.arrived, .room-focus, .journey-artifact.arriving, .journey-finale, .journey-complete .artifact-grace, .collection-toast { animation: none; }
 }

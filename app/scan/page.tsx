@@ -32,7 +32,7 @@ function ScanContent() {
     const submit = async () => {
       try {
         const response = await fetch("/api/check", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ teamName: name, room: room.key, action }) });
-        const data = await response.json() as { code?: string; error?: string; teamName?: string };
+        const data = await response.json() as { code?: string; error?: string; teamName?: string; collectedRoom?: string | null };
         if (data.code === "ROOM_FULL") {
           window.alert(data.error || "현재 입장 가능한 조가 모두 찼어요. 다른 방을 찾아가세요!!");
           router.replace("/");
@@ -43,7 +43,9 @@ function ScanContent() {
         localStorage.setItem("find-team", savedName);
         setDone(true);
         await new Promise((resolve) => window.setTimeout(resolve, 850));
-        router.replace(action === "enter" ? `/room/${room.key}?team=${encodeURIComponent(savedName)}&welcome=1` : `/?team=${encodeURIComponent(savedName)}`);
+        router.replace(action === "enter"
+          ? `/room/${room.key}?team=${encodeURIComponent(savedName)}&welcome=1`
+          : `/?team=${encodeURIComponent(savedName)}${data.collectedRoom ? `&collect=${data.collectedRoom}` : ""}`);
       } catch (caught) {
         setError(caught instanceof Error ? caught.message : "잠시 후 다시 시도해 주세요.");
       }

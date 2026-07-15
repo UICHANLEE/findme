@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Gaegu, Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import "./poster-preview.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -9,6 +10,12 @@ const geistSans = Geist({
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+const gaegu = Gaegu({
+  variable: "--font-hand",
+  weight: ["400", "700"],
   subsets: ["latin"],
 });
 
@@ -40,7 +47,7 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${gaegu.variable} antialiased`}
       >
         {children}
       </body>

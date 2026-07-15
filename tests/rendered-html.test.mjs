@@ -11,12 +11,13 @@ test("participant and themed-room experiences are present", async () => {
     read("app/room/[slug]/page.tsx"),
     read("lib/find-data.ts"),
   ]);
-  assert.match(home, /우리는 지금/);
+  assert.match(home, /Find<\/span> me/);
   assert.match(home, /\/api\/status/);
   assert.match(home, /방을 찾으러 다니는 중/);
   assert.match(home, /team\.teamName/);
   assert.match(home, /elapsedRoomLabel/);
   assert.match(room, /퇴장 QR/);
+  assert.match(room, /room-threshold/);
   for (const name of ["눈으로 find", "소리로 find", "몸으로 find", "마음으로 find", "은혜로 find"]) assert.match(data, new RegExp(name));
 });
 
@@ -56,5 +57,6 @@ test("in-app camera scans a saved team's QR without another name prompt", async 
   assert.match(check, /ROOM_FULL/);
   assert.match(check, /otherTeamsInside >= room\.maxTeams/);
   assert.match(scanner, /window\.alert/);
+  assert.match(scanner, /camera-\$\{transition\.action\}/);
   assert.doesNotMatch(home, /jaegunadmin\.html/);
 });

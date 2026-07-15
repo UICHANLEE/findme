@@ -19,6 +19,7 @@ export default function ScannerPage() {
   const [cameraState, setCameraState] = useState<CameraState>("starting");
   const [message, setMessage] = useState("카메라를 준비하고 있어요…");
   const [attempt, setAttempt] = useState(0);
+  const [transition, setTransition] = useState<{ action: "enter" | "exit"; color: string } | null>(null);
 
   const handleCode = useCallback(async (rawValue: string) => {
     if (busyRef.current) return;
@@ -46,6 +47,7 @@ export default function ScannerPage() {
     }
 
     busyRef.current = true;
+    setTransition({ action, color: room.color });
     setCameraState("processing");
     setMessage(action === "enter" ? `${room.name} 입장 처리 중…` : `${room.name} 퇴장 처리 중…`);
     controlsRef.current?.stop();
@@ -131,7 +133,7 @@ export default function ScannerPage() {
   };
 
   return (
-    <main className={`camera-shell camera-${cameraState}`}>
+    <main className={`camera-shell camera-${cameraState} ${transition ? `camera-${transition.action}` : ""}`} style={{ "--transition-color": transition?.color || "#171713" } as React.CSSProperties}>
       <video ref={videoRef} className="camera-preview" muted playsInline aria-label="QR 스캔 카메라" />
       <div className="camera-shade" aria-hidden="true" />
       <header className="camera-header">

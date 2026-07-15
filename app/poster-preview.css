@@ -1,0 +1,19 @@
+/* Local poster-theme trial overrides. Kept separate so this direction is easy to compare or revert. */
+.hero-copy { min-width: 0; }
+
+@media (max-width: 1050px) {
+  .hero { grid-template-columns: minmax(0, 1fr); }
+  .hero-copy { width: 100%; max-width: 680px; }
+  .hero-art { width: min(820px, 100%); justify-self: center; }
+}
+
+@media (max-width: 700px) {
+  .event-name { max-width: 155px; text-align: right; font-size: 13px; line-height: 1.1; }
+  .hero { min-height: auto; padding: 44px 22px 52px; gap: 31px; }
+  .hero h1 { white-space: nowrap; font-size: 52px; margin: 28px 0 16px; }
+  .hero blockquote { font-size: 18px; }
+  .hero-copy > p { font-size: 12px; }
+  .hero-art { aspect-ratio: 3 / 2; }
+  .scribble-line { margin-bottom: 18px; }
+  .team-picker { width: 100%; }
+}

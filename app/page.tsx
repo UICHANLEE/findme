@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { elapsedRoomLabel, rooms, teamKey, type TeamState } from "../lib/find-data";
 
 export default function Home() {
@@ -66,29 +67,35 @@ function HomeContent() {
     <main className="home-shell">
       <header className="topbar">
         <Link className="wordmark" href="/">FIND<span>:</span>US</Link>
+        <span className="event-name">2026 재건 청년 하계수련회</span>
       </header>
 
       <section className="hero">
-        <div className="eyebrow"><i /> 2026 FIND JOURNEY</div>
-        <h1>우리는 지금,<br /><em>무엇을 찾고 있나요?</em></h1>
-        <p>처음 한 번만 우리 조 이름을 입력해 주세요.<br className="mobile-break" /> 이후에는 앱 카메라로 QR을 비추면 조원 모두의 화면이 바로 바뀝니다.</p>
-        {ready && !teamName ? (
-          <form className="team-picker" onSubmit={connectTeam}>
-            <span>우리 조</span>
-            <input value={teamDraft} onChange={(event) => setTeamDraft(event.target.value)} placeholder="모두 같은 조 이름을 입력해 주세요" maxLength={24} aria-label="우리 조 이름" autoFocus />
-            <button type="submit">시작하기</button>
-          </form>
-        ) : teamName ? (
-          <div className="team-connected">
-            <div><span>연결된 조</span><strong>{teamName}</strong><button type="button" onClick={changeTeam}>조 변경</button></div>
-            <Link href="/scanner"><span className="camera-icon" aria-hidden="true">▣</span><b>QR 스캔하기</b><small>카메라로 입구·출구 QR을 비춰 주세요</small></Link>
-          </div>
-        ) : null}
-        {teamName && <div className={`waiting ${myState ? "journey" : ""}`}><span className="pulse" /> {myState ? "방을 찾으러 다니는 중.." : "입장 QR을 스캔하면 여정이 시작돼요"}</div>}
+        <div className="hero-copy">
+          <div className="eyebrow">2026 FIND JOURNEY</div>
+          <h1><span>Find</span> me</h1>
+          <div className="scribble-line" aria-hidden="true" />
+          <blockquote>“너희가 온 마음으로 나를 구하면<br />나를 찾을 것이요 나를 만나리라”<cite>예레미야 29:13</cite></blockquote>
+          <p>처음 한 번만 우리 조 이름을 입력해 주세요.<br className="mobile-break" /> 이후에는 카메라로 QR을 비추면 바로 여정이 시작됩니다.</p>
+          {ready && !teamName ? (
+            <form className="team-picker" onSubmit={connectTeam}>
+              <span>우리 조</span>
+              <input value={teamDraft} onChange={(event) => setTeamDraft(event.target.value)} placeholder="같은 조 이름을 입력해 주세요" maxLength={24} aria-label="우리 조 이름" autoFocus />
+              <button type="submit">START</button>
+            </form>
+          ) : teamName ? (
+            <div className="team-connected">
+              <div><span>연결된 조</span><strong>{teamName}</strong><button type="button" onClick={changeTeam}>조 변경</button></div>
+              <Link href="/scanner"><span className="camera-icon" aria-hidden="true">SCAN</span><b>QR 스캔하기</b><small>입구·출구 QR을 비춰 주세요</small></Link>
+            </div>
+          ) : null}
+          {teamName && <div className={`waiting ${myState ? "journey" : ""}`}><span className="pulse" /> {myState ? "방을 찾으러 다니는 중.." : "입장 QR을 스캔하면 여정이 시작돼요"}</div>}
+        </div>
+        <div className="hero-art"><Image src="/find-journey-hero.jpg" alt="십자가를 찾아가는 손그림 미로와 돋보기" width={1536} height={1024} unoptimized priority /></div>
       </section>
 
       <section className="room-overview" aria-label="방별 실시간 현황">
-        <div className="section-heading"><span>LIVE ROOMS</span><h2>지금, 각 방에서는</h2></div>
+        <div className="section-heading"><span>LIVE ROOMS</span><h2>다섯 개의 방을 찾아서</h2><p>눈으로, 소리로, 몸으로, 마음으로, 그리고 은혜로 찾아가요.</p></div>
         <div className="searching-zone">
           <div className="searching-icon">↝</div>
           <div><span>ON THE WAY</span><h3>방을 찾으러 다니는 중..</h3></div>

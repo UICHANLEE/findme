@@ -53,7 +53,7 @@ function ScanContent() {
   if (!room) return <main className="scan-error"><h1>유효하지 않은 QR이에요.</h1><Link href="/">처음으로 돌아가기</Link></main>;
 
   return (
-    <main className={`scan-shell ${done ? "scan-success" : ""}`} style={{ "--accent": room.color, "--soft": room.soft } as React.CSSProperties}>
+    <main className={`scan-shell scan-${action} ${done ? "scan-success" : ""}`} style={{ "--accent": room.color, "--soft": room.soft } as React.CSSProperties}>
       <div className="scan-orbit"><span>{room.mark}</span></div>
       <section className="scan-panel">
         <div className="eyebrow"><i /> QR CHECK {action === "enter" ? "IN" : "OUT"}</div>

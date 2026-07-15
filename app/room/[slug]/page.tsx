@@ -14,6 +14,7 @@ function RoomContent() {
   const query = useSearchParams();
   const router = useRouter();
   const room = getRoom(params.slug);
+  const isEntering = query.get("welcome") === "1";
   const teamName = query.get("team") || "";
   const teamId = teamKey(teamName);
   const [enteredAt, setEnteredAt] = useState<string | null>(null);
@@ -46,7 +47,8 @@ function RoomContent() {
   const secs = String(seconds % 60).padStart(2, "0");
 
   return (
-    <main className={`experience experience-${room.key}`} style={{ "--accent": room.color, "--soft": room.soft } as React.CSSProperties}>
+    <main className={`experience experience-${room.key} ${isEntering ? "experience-entering" : ""}`} style={{ "--accent": room.color, "--soft": room.soft } as React.CSSProperties}>
+      {isEntering && <div className="room-threshold" aria-hidden="true"><span>{room.name}<small>우리 조가 입장합니다</small></span></div>}
       <header><Link href={`/?team=${encodeURIComponent(teamName)}`}>FIND<span>:</span>US</Link><div className="room-header-actions"><Link className="room-scan-button" href="/scanner">▣ QR 스캔</Link><div className="live-badge"><i /> LIVE</div></div></header>
       <div className="experience-mark" aria-hidden="true">{room.mark}</div>
       <section className="experience-copy">

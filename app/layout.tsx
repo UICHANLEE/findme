@@ -21,16 +21,16 @@ const gaegu = Gaegu({
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : "http://localhost:3000"),
-  title: "FIND:US — 서로를 발견하는 다섯 개의 방",
-  description: "조별 QR 입장과 퇴장, 방별 실시간 현황을 확인하는 FIND:US 여정",
+  title: "FIND IT — 서로를 발견하는 다섯 개의 방",
+  description: "조별 QR 입장과 퇴장, 방별 실시간 현황을 확인하는 FIND IT 여정",
   openGraph: {
-    title: "FIND:US",
+    title: "FIND IT",
     description: "서로를 발견하는 다섯 개의 방",
     type: "website",
   },
   twitter: {
     card: "summary",
-    title: "FIND:US",
+    title: "FIND IT",
     description: "서로를 발견하는 다섯 개의 방",
   },
   icons: {

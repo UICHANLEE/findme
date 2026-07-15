@@ -12,19 +12,26 @@ test("participant and themed-room experiences are present", async () => {
     read("lib/find-data.ts"),
   ]);
   assert.match(home, /Find<\/span> me/);
+  assert.match(home, /FIND <span>IT<\/span>/);
+  assert.doesNotMatch(home, /FIND:US/);
   assert.match(home, /\/api\/status/);
   assert.match(home, /방을 찾으러 다니는 중/);
   assert.match(home, /team\.teamName/);
   assert.match(home, /elapsedRoomLabel/);
+  assert.match(home, /selectedRoomKey/);
+  assert.match(home, /room-focus/);
+  assert.match(home, /moveHeroArt/);
   assert.match(room, /퇴장 QR/);
   assert.match(room, /room-threshold/);
   for (const name of ["눈으로 find", "소리로 find", "몸으로 find", "마음으로 find", "은혜로 find"]) assert.match(data, new RegExp(name));
 });
 
 test("administrator, QR, persistence, and deployment output are present", async () => {
-  const [admin, check, vercel] = await Promise.all([
+  const [admin, check, logs, store, vercel] = await Promise.all([
     read("app/jaegunadmin.html/page.tsx"),
     read("app/api/check/route.ts"),
+    read("app/api/logs/route.ts"),
+    read("lib/find-store.ts"),
     read("vercel.json"),
   ]);
   assert.match(admin, /QRCode\.toDataURL/);
@@ -32,8 +39,16 @@ test("administrator, QR, persistence, and deployment output are present", async 
   assert.match(admin, /운영 Q-sheet/);
   assert.match(admin, /room\.supplies/);
   assert.match(admin, /elapsedRoomLabel\(team\.enteredAt\)/);
+  assert.match(admin, /조별 활동 로그/);
+  assert.match(admin, /CSV 다운로드/);
+  assert.match(admin, /downloadHref/);
   assert.match(check, /saveTeamState/);
+  assert.match(check, /appendActivityLog/);
   assert.match(check, /teamName/);
+  assert.match(logs, /getActivityLogs/);
+  assert.match(logs, /text\/csv/);
+  assert.match(logs, /Content-Disposition/);
+  assert.match(store, /MAX_LOGS/);
   assert.match(vercel, /"icn1"/);
   await access(new URL(".next/BUILD_ID", root));
   await access(new URL("public/favicon.svg", root));

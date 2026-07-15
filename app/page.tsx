@@ -17,6 +17,8 @@ function HomeContent() {
   const [teamDraft, setTeamDraft] = useState("");
   const [states, setStates] = useState<TeamState[]>([]);
   const [ready, setReady] = useState(false);
+  const [selectedRoomKey, setSelectedRoomKey] = useState<string | null>(null);
+  const [justConnected, setJustConnected] = useState(false);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -53,6 +55,8 @@ function HomeContent() {
     if (!value) return;
     setTeamName(value);
     localStorage.setItem("find-team", value);
+    setJustConnected(true);
+    window.setTimeout(() => setJustConnected(false), 900);
     const next = params.get("next");
     if (next?.startsWith("/scan?")) router.push(next);
   };
@@ -62,11 +66,26 @@ function HomeContent() {
     setTeamDraft("");
   };
   const searching = states.filter((state) => !state.currentRoom);
+  const selectedRoom = rooms.find((room) => room.key === selectedRoomKey);
+  const selectedInside = selectedRoom ? states.filter((state) => state.currentRoom === selectedRoom.key) : [];
+  const moveHeroArt = (event: React.PointerEvent<HTMLDivElement>) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    const x = ((event.clientX - rect.left) / rect.width - 0.5) * 2;
+    const y = ((event.clientY - rect.top) / rect.height - 0.5) * 2;
+    event.currentTarget.style.setProperty("--art-x", `${x * 8}px`);
+    event.currentTarget.style.setProperty("--art-y", `${y * 6}px`);
+    event.currentTarget.style.setProperty("--art-rotate", `${x * 0.7 - 1}deg`);
+  };
+  const resetHeroArt = (event: React.PointerEvent<HTMLDivElement>) => {
+    event.currentTarget.style.removeProperty("--art-x");
+    event.currentTarget.style.removeProperty("--art-y");
+    event.currentTarget.style.removeProperty("--art-rotate");
+  };
 
   return (
     <main className="home-shell">
       <header className="topbar">
-        <Link className="wordmark" href="/">FIND<span>:</span>US</Link>
+        <Link className="wordmark" href="/">FIND <span>IT</span></Link>
         <span className="event-name">2026 재건 청년 하계수련회</span>
       </header>
 
@@ -84,14 +103,14 @@ function HomeContent() {
               <button type="submit">START</button>
             </form>
           ) : teamName ? (
-            <div className="team-connected">
+            <div className={`team-connected ${justConnected ? "arrived" : ""}`}>
               <div><span>연결된 조</span><strong>{teamName}</strong><button type="button" onClick={changeTeam}>조 변경</button></div>
               <Link href="/scanner"><span className="camera-icon" aria-hidden="true">SCAN</span><b>QR 스캔하기</b><small>입구·출구 QR을 비춰 주세요</small></Link>
             </div>
           ) : null}
           {teamName && <div className={`waiting ${myState ? "journey" : ""}`}><span className="pulse" /> {myState ? "방을 찾으러 다니는 중.." : "입장 QR을 스캔하면 여정이 시작돼요"}</div>}
         </div>
-        <div className="hero-art"><Image src="/find-journey-hero.jpg" alt="십자가를 찾아가는 손그림 미로와 돋보기" width={1536} height={1024} unoptimized priority /></div>
+        <div className="hero-art" onPointerMove={moveHeroArt} onPointerLeave={resetHeroArt}><Image src="/find-journey-hero.jpg" alt="십자가를 찾아가는 손그림 미로와 돋보기" width={1536} height={1024} unoptimized priority /></div>
       </section>
 
       <section className="room-overview" aria-label="방별 실시간 현황">
@@ -106,19 +125,38 @@ function HomeContent() {
           {rooms.map((room, index) => {
             const inside = states.filter((state) => state.currentRoom === room.key);
             return (
-              <article className="room-card" key={room.key} style={{ "--accent": room.color, "--soft": room.soft } as React.CSSProperties}>
+              <button type="button" className={`room-card ${selectedRoomKey === room.key ? "selected" : ""}`} key={room.key} style={{ "--accent": room.color, "--soft": room.soft } as React.CSSProperties} onClick={() => setSelectedRoomKey(selectedRoomKey === room.key ? null : room.key)} aria-pressed={selectedRoomKey === room.key}>
                 <div className="card-num">0{index + 1}</div>
                 <div className="card-mark">{room.mark}</div>
                 <h3>{room.name}</h3>
                 <p>{room.location}</p>
                 <div className="occupancy"><span>{inside.length}</span> / {room.maxTeams}개 조 활동 중</div>
                 <div className="team-dots">{inside.length ? inside.map((team) => <span className="active" key={team.teamId}><b>{team.teamName}</b><small>{elapsedRoomLabel(team.enteredAt)}</small></span>) : <em>입장한 조가 없어요</em>}</div>
-              </article>
+                <small className="card-action">{selectedRoomKey === room.key ? "접기" : "자세히 보기"}</small>
+              </button>
             );
           })}
         </div>
+        {selectedRoom && (
+          <section className="room-focus" style={{ "--accent": selectedRoom.color, "--soft": selectedRoom.soft } as React.CSSProperties} aria-live="polite">
+            <div className="room-focus-copy">
+              <span>SELECTED ROOM · {selectedRoom.location}</span>
+              <h3>{selectedRoom.name}</h3>
+              <p>{selectedRoom.prompt}</p>
+            </div>
+            <div className="room-focus-status">
+              <div><span>현재 현황</span><strong>{selectedInside.length}<small> / {selectedRoom.maxTeams}개 조</small></strong></div>
+              <div className="capacity-track" aria-label={`${selectedRoom.maxTeams}개 조 중 ${selectedInside.length}개 조 입장`}><i style={{ width: `${Math.min(100, selectedInside.length / selectedRoom.maxTeams * 100)}%` }} /></div>
+              <div className="focus-teams">{selectedInside.length ? selectedInside.map((team) => <b key={team.teamId}>{team.teamName}<small>{elapsedRoomLabel(team.enteredAt)}</small></b>) : <em>지금 바로 입장할 수 있어요</em>}</div>
+            </div>
+            <div className="room-focus-actions">
+              <Link href="/scanner">QR 스캔하기</Link>
+              <button type="button" onClick={() => setSelectedRoomKey(null)}>닫기</button>
+            </div>
+          </section>
+        )}
       </section>
-      <footer><span>FIND:US</span><p>서로를 발견하는 다섯 개의 방</p><b>LIVE</b></footer>
+      <footer><span>FIND IT</span><p>서로를 발견하는 다섯 개의 방</p><b>LIVE</b></footer>
     </main>
   );
 }

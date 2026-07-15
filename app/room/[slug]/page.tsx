@@ -49,7 +49,7 @@ function RoomContent() {
   return (
     <main className={`experience experience-${room.key} ${isEntering ? "experience-entering" : ""}`} style={{ "--accent": room.color, "--soft": room.soft } as React.CSSProperties}>
       {isEntering && <div className="room-threshold" aria-hidden="true"><span>{room.name}<small>우리 조가 입장합니다</small></span></div>}
-      <header><Link href={`/?team=${encodeURIComponent(teamName)}`}>FIND<span>:</span>US</Link><div className="room-header-actions"><Link className="room-scan-button" href="/scanner">▣ QR 스캔</Link><div className="live-badge"><i /> LIVE</div></div></header>
+      <header><Link href={`/?team=${encodeURIComponent(teamName)}`}>FIND <span>IT</span></Link><div className="room-header-actions"><Link className="room-scan-button" href="/scanner">▣ QR 스캔</Link><div className="live-badge"><i /> LIVE</div></div></header>
       <div className="experience-mark" aria-hidden="true">{room.mark}</div>
       <section className="experience-copy">
         <div className="room-location">ROOM {roomsIndex(room.key)} · {room.location}</div>

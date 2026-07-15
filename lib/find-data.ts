@@ -50,3 +50,13 @@ export type TeamState = {
   enteredAt: string | null;
   updatedAt: string | null;
 };
+
+export type ActivityLog = {
+  id: string;
+  teamId: string;
+  teamName: string;
+  room: RoomKey;
+  action: "enter" | "exit";
+  timestamp: string;
+  durationSeconds: number | null;
+};

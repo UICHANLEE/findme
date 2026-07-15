@@ -29,7 +29,7 @@ export default function ScannerPage() {
       url = new URL(rawValue);
       if (url.origin !== window.location.origin || url.pathname !== "/scan") throw new Error("invalid");
     } catch {
-      setMessage("FIND:US 입장·퇴장 QR을 비춰 주세요.");
+      setMessage("FIND IT 입장·퇴장 QR을 비춰 주세요.");
       return;
     }
 
@@ -138,7 +138,7 @@ export default function ScannerPage() {
       <div className="camera-shade" aria-hidden="true" />
       <header className="camera-header">
         <Link href="/" aria-label="뒤로 가기">←</Link>
-        <span>FIND<b>:</b>US QR</span>
+        <span>FIND <b>IT</b> QR</span>
         <div>{teamName || "우리 조"}</div>
       </header>
       <section className="camera-guide">

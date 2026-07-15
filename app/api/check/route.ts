@@ -1,5 +1,5 @@
 import { cleanTeamName, getRoom, teamKey, type TeamState } from "../../../lib/find-data";
-import { getTeamStates, saveTeamState } from "../../../lib/find-store";
+import { appendActivityLog, getTeamStates, saveTeamState } from "../../../lib/find-store";
 
 export const runtime = "nodejs";
 
@@ -39,6 +39,20 @@ export async function POST(request: Request) {
       updatedAt: now,
     };
     await saveTeamState(next);
+    const durationSeconds = body.action === "exit" && existing?.enteredAt
+      ? Math.max(0, Math.floor((new Date(now).getTime() - new Date(existing.enteredAt).getTime()) / 1000))
+      : null;
+    try {
+      await appendActivityLog({
+        id: crypto.randomUUID(),
+        teamId,
+        teamName,
+        room: room.key,
+        action: body.action as "enter" | "exit",
+        timestamp: now,
+        durationSeconds,
+      });
+    } catch { /* live room state remains the priority if log persistence is temporarily unavailable */ }
     return Response.json({ ok: true, teamId, teamName, room: room.key, action: body.action });
   } catch (error) {
     return Response.json({ error: error instanceof Error ? error.message : "처리하지 못했습니다." }, { status: 500 });

@@ -1,10 +1,43 @@
 /* Local poster-theme trial overrides. Kept separate so this direction is easy to compare or revert. */
 .hero-copy { min-width: 0; }
+.hero-art { --art-x: 0px; --art-y: 0px; --art-rotate: -1deg; transform: translate3d(var(--art-x), var(--art-y), 0) rotate(var(--art-rotate)); transition: transform .32s cubic-bezier(.22,.8,.25,1), filter .32s ease; }
+.hero-art:hover { filter: saturate(1.06); }
+.team-connected.arrived { animation: teamArrived .75s cubic-bezier(.22,.8,.25,1) both; }
+@keyframes teamArrived { 0% { opacity: 0; transform: translateY(14px) rotate(.35deg) scale(.97); } 60% { transform: translateY(-3px) rotate(.35deg) scale(1.01); } 100% { opacity: 1; transform: translateY(0) rotate(.35deg) scale(1); } }
+
+.room-card { appearance: none; width: 100%; color: inherit; font: inherit; text-align: left; cursor: pointer; overflow: hidden; }
+.room-card::after { content: ""; position: absolute; inset: auto 22px 0; height: 4px; background: var(--accent); transform: scaleX(0); transform-origin: left; transition: transform .25s ease; }
+.room-card:hover::after, .room-card.selected::after { transform: scaleX(1); }
+.room-card:focus-visible { outline: 4px solid color-mix(in srgb, var(--accent) 35%, white); outline-offset: -4px; z-index: 2; }
+.room-card.selected { background: var(--soft); transform: translateY(-7px); z-index: 1; }
+.card-action { position: absolute; top: 24px; right: 20px; color: var(--accent); font: 700 11px var(--font-hand); opacity: 0; transform: translateX(5px); transition: opacity .2s, transform .2s; }
+.room-card:hover .card-action, .room-card.selected .card-action, .room-card:focus-visible .card-action { opacity: 1; transform: translateX(0); }
+.room-focus { margin-top: 18px; padding: 28px 30px; display: grid; grid-template-columns: minmax(240px,1fr) minmax(260px,1.2fr) auto; align-items: center; gap: 34px; border: 2px solid var(--accent); background: var(--soft); animation: focusOpen .42s cubic-bezier(.22,.8,.25,1) both; transform-origin: top; }
+@keyframes focusOpen { from { opacity: 0; transform: translateY(-12px) scaleY(.96); } to { opacity: 1; transform: translateY(0) scaleY(1); } }
+.room-focus-copy > span, .room-focus-status > div > span { color: var(--accent); font: 700 9px var(--font-geist-mono); letter-spacing: .14em; }
+.room-focus-copy h3 { margin: 6px 0 2px; font: 700 34px var(--font-hand); }
+.room-focus-copy p { margin: 0; color: #625f57; font-size: 12px; }
+.room-focus-status > div:first-child { display: flex; justify-content: space-between; align-items: end; }
+.room-focus-status strong { color: var(--accent); font: 700 25px var(--font-geist-mono); }
+.room-focus-status strong small { color: #77746b; font-size: 9px; }
+.capacity-track { height: 5px; margin: 10px 0 12px; background: rgba(23,23,19,.12); overflow: hidden; }
+.capacity-track i { display: block; height: 100%; background: var(--accent); transition: width .5s cubic-bezier(.22,.8,.25,1); }
+.focus-teams { display: flex; flex-wrap: wrap; gap: 6px; }
+.focus-teams b { padding: 5px 8px; display: inline-grid; gap: 1px; color: white; background: var(--accent); font-size: 10px; }
+.focus-teams b small { color: rgba(255,255,255,.75); font: 500 8px var(--font-geist-mono); }
+.focus-teams em { color: #77746b; font-size: 10px; font-style: normal; }
+.room-focus-actions { display: grid; gap: 7px; min-width: 120px; }
+.room-focus-actions a, .room-focus-actions button { min-height: 42px; padding: 0 16px; display: grid; place-items: center; border: 1px solid var(--accent); font-size: 11px; font-weight: 800; }
+.room-focus-actions a { color: white; background: var(--accent); }
+.room-focus-actions button { color: var(--accent); background: transparent; }
+.room-focus-actions a:hover, .room-focus-actions button:hover { transform: translateY(-2px); }
 
 @media (max-width: 1050px) {
   .hero { grid-template-columns: minmax(0, 1fr); }
   .hero-copy { width: 100%; max-width: 680px; }
   .hero-art { width: min(820px, 100%); justify-self: center; }
+  .room-focus { grid-template-columns: 1fr 1fr; }
+  .room-focus-actions { grid-column: 1 / -1; grid-template-columns: 1fr 1fr; }
 }
 
 @media (max-width: 700px) {
@@ -16,4 +49,13 @@
   .hero-art { aspect-ratio: 3 / 2; }
   .scribble-line { margin-bottom: 18px; }
   .team-picker { width: 100%; }
+  .hero-art { pointer-events: none; }
+  .card-action { opacity: 1; transform: none; }
+  .room-focus { padding: 22px; grid-template-columns: 1fr; gap: 22px; }
+  .room-focus-actions { grid-column: auto; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-art, .room-card, .room-focus-actions a, .room-focus-actions button { transition: none; transform: none; }
+  .team-connected.arrived, .room-focus { animation: none; }
 }

@@ -7,7 +7,9 @@ body { margin: 0; font-family: var(--font-geist-sans), "Apple SD Gothic Neo", sa
 a { color: inherit; text-decoration: none; }
 button, select { font: inherit; }
 button { cursor: pointer; }
-.wordmark { color: var(--poster-blue); font: 700 28px var(--font-hand); letter-spacing: -.04em; }
+.wordmark { color: var(--poster-blue); font: 700 28px var(--font-hand); letter-spacing: -.04em; display: inline-flex; align-items: center; gap: 8px; }
+.wordmark > img { width: 42px; height: 42px; object-fit: cover; border-radius: 50%; mix-blend-mode: multiply; }
+.admin-shell aside .wordmark > img { mix-blend-mode: normal; }
 .wordmark span, .experience header a span { color: #d23f2d; }
 .topbar { height: 82px; padding: 0 5.5vw; display: flex; align-items: center; justify-content: space-between; border-bottom: 3px solid var(--poster-blue); }
 .event-name { font: 700 20px var(--font-hand); }
@@ -58,7 +60,9 @@ button { cursor: pointer; }
 .room-card { min-height: 370px; padding: 24px 22px; border: 2px solid var(--ink); border-left: 0; position: relative; transition: transform .25s, background .25s; background: rgba(255,255,255,.25); }
 .room-card:hover { transform: translateY(-7px); background: var(--soft); z-index: 1; }
 .card-num { font: 600 11px var(--font-geist-mono); color: #77746b; }
-.card-mark { height: 120px; display: flex; align-items: center; font-size: 66px; font-weight: 400; color: var(--accent); letter-spacing: -.18em; }
+.card-mark { height: 132px; display: flex; align-items: center; }
+.card-mark img { width: 132px; height: 132px; object-fit: cover; border-radius: 50%; mix-blend-mode: multiply; transition: transform .35s cubic-bezier(.22,.8,.25,1); }
+.room-card:hover .card-mark img, .room-card.selected .card-mark img { transform: rotate(-3deg) scale(1.05); }
 .room-card h3 { font: 700 30px var(--font-hand); letter-spacing: -.04em; margin: 16px 0 2px; }
 .room-card > p { margin: 0; color: #77746b; font-size: 12px; }
 .occupancy { border-top: 1px solid var(--line); margin-top: 27px; padding-top: 18px; font-size: 11px; color: #77746b; }
@@ -79,7 +83,8 @@ footer b { margin-left: auto; color: #1d9a6c; }
 .scan-orbit { display: grid; place-items: center; position: relative; }
 .scan-orbit::before, .scan-orbit::after { content: ""; position: absolute; border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent); border-radius: 50%; width: 64%; aspect-ratio: 1; }
 .scan-orbit::after { width: 90%; }
-.scan-orbit span { color: var(--accent); font-size: clamp(130px, 21vw, 350px); letter-spacing: -.2em; z-index: 1; animation: float 4s ease-in-out infinite; }
+.scan-orbit span { width: min(62%, 520px); aspect-ratio: 1; z-index: 1; animation: float 4s ease-in-out infinite; }
+.scan-orbit span img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; mix-blend-mode: multiply; }
 @keyframes float { 50% { transform: translateY(-14px) rotate(3deg); } }
 .scan-panel { background: var(--paper); padding: 9vh 9vw 7vh; display: flex; flex-direction: column; justify-content: center; }
 .scan-action { color: var(--accent); font-size: 13px; font-weight: 800; margin: 48px 0 6px; }
@@ -167,11 +172,14 @@ footer b { margin-left: auto; color: #1d9a6c; }
 @keyframes contentRise { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: translateY(0); } }
 .experience header { height: 82px; border-bottom: 1px solid color-mix(in srgb, var(--accent) 22%, transparent); display: flex; align-items: center; justify-content: space-between; position: relative; z-index: 2; }
 .experience header a { font-size: 20px; font-weight: 900; letter-spacing: -1px; }
+.experience-wordmark { display: inline-flex; align-items: center; gap: 7px; }
+.experience-wordmark img { width: 36px; height: 36px; object-fit: cover; border-radius: 50%; mix-blend-mode: multiply; }
 .live-badge { font: 800 10px var(--font-geist-mono); letter-spacing: .15em; display: flex; align-items: center; gap: 7px; }
 .live-badge i { width: 6px; height: 6px; background: #1d9a6c; border-radius: 50%; animation: pulse 1.4s infinite; }
 .room-header-actions { display: flex; align-items: center; gap: 20px; }
 .experience header .room-scan-button { padding: 8px 12px; border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent); border-radius: 99px; font-size: 10px; letter-spacing: 0; }
-.experience-mark { position: absolute; font-size: clamp(300px, 44vw, 720px); right: -3vw; top: -4vw; color: color-mix(in srgb, var(--accent) 14%, transparent); line-height: 1; letter-spacing: -.18em; }
+.experience-mark { position: absolute; width: clamp(380px, 47vw, 760px); aspect-ratio: 1; right: -4vw; top: -7vw; opacity: .14; transform: rotate(4deg); }
+.experience-mark img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; mix-blend-mode: multiply; }
 .experience-copy { position: relative; z-index: 1; padding-top: 8vh; }
 .room-location { font: 700 10px var(--font-geist-mono); letter-spacing: .18em; color: var(--accent); }
 .experience-copy h1 { font-size: clamp(64px, 10vw, 150px); line-height: .87; letter-spacing: -.08em; margin: 4vh 0 24px; }
@@ -215,7 +223,8 @@ footer b { margin-left: auto; color: #1d9a6c; }
 .admin-rooms { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
 .admin-rooms article, .qr-grid article { border: 1px solid var(--line); background: white; padding: 22px; }
 .admin-room-top { display: flex; align-items: center; gap: 14px; padding-bottom: 20px; }
-.admin-room-mark { width: 55px; height: 55px; display: grid; place-items: center; background: var(--soft); color: var(--accent); font-size: 26px; letter-spacing: -.15em; }
+.admin-room-mark { width: 55px; height: 55px; display: grid; place-items: center; background: var(--soft); overflow: hidden; border-radius: 50%; }
+.admin-room-mark img, .qr-room-title > span img { width: 100%; height: 100%; object-fit: cover; mix-blend-mode: multiply; }
 .admin-room-top h2, .qr-room-title h2 { margin: 0 0 3px; font-size: 17px; }
 .admin-room-top p, .qr-room-title p { margin: 0; color: #858177; font-size: 10px; }
 .admin-room-top > strong { margin-left: auto; font: 800 27px var(--font-geist-mono); color: var(--accent); }
@@ -251,7 +260,7 @@ footer b { margin-left: auto; color: #1d9a6c; }
 .guide-grid dd i { flex: 0 0 auto; width: 17px; height: 17px; display: grid; place-items: center; border-radius: 50%; background: var(--soft); color: var(--accent); font: normal 700 8px var(--font-geist-mono); margin-top: 3px; }
 .qr-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
 .qr-room-title { display: flex; gap: 14px; align-items: center; margin-bottom: 20px; }
-.qr-room-title > span { width: 48px; height: 48px; display: grid; place-items: center; background: var(--soft); color: var(--accent); font-size: 23px; letter-spacing: -.15em; }
+.qr-room-title > span { width: 48px; height: 48px; display: grid; place-items: center; background: var(--soft); overflow: hidden; border-radius: 50%; }
 .qr-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .qr-box { border: 1px solid var(--line); padding: 12px; text-align: center; position: relative; }
 .qr-box.exit { background: #f3f2ee; }
@@ -315,11 +324,12 @@ footer b { margin-left: auto; color: #1d9a6c; }
   .searching-teams { grid-column: 1 / -1; justify-content: flex-start; padding-top: 12px; border-top: 1px solid #47463f; }
   .room-grid { grid-template-columns: 1fr; }
   .room-card, .room-card:last-child { grid-column: auto; min-height: 315px; }
-  .card-mark { height: 90px; }
+  .card-mark { height: 112px; }
+  .card-mark img { width: 112px; height: 112px; }
   footer { padding: 22px; }
   footer p { display: none; }
   .scan-shell { grid-template-columns: 1fr; grid-template-rows: 34vh 1fr; }
-  .scan-orbit span { font-size: 120px; }
+  .scan-orbit span { width: 170px; }
   .scan-panel { padding: 42px 24px 35px; justify-content: flex-start; }
   .scan-action { margin-top: 28px; }
   .scan-panel h1 { font-size: 51px; }
@@ -328,7 +338,7 @@ footer b { margin-left: auto; color: #1d9a6c; }
   .experience-copy { padding-top: 10vh; }
   .experience-copy h1 { font-size: 66px; }
   .experience-copy > p { font-size: 16px; }
-  .experience-mark { font-size: 260px; right: -45px; top: 100px; }
+  .experience-mark { width: 310px; right: -70px; top: 95px; }
   .room-header-actions { gap: 10px; }
   .experience-bottom { left: 24px; right: 24px; bottom: 60px; grid-template-columns: 1fr; gap: 20px; }
   .timer { position: absolute; right: 0; top: 25px; }

@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { cleanTeamName, getRoom } from "../../lib/find-data";
 
 export default function ScanPage() {
@@ -54,7 +55,7 @@ function ScanContent() {
 
   return (
     <main className={`scan-shell scan-${action} ${done ? "scan-success" : ""}`} style={{ "--accent": room.color, "--soft": room.soft } as React.CSSProperties}>
-      <div className="scan-orbit"><span>{room.mark}</span></div>
+      <div className="scan-orbit"><span><Image src={room.emblem} alt={`${room.name} 엠블럼`} width={640} height={640} priority /></span></div>
       <section className="scan-panel">
         <div className="eyebrow"><i /> QR CHECK {action === "enter" ? "IN" : "OUT"}</div>
         <div className="scan-action">{action === "enter" ? "입장" : "퇴장"}</div>

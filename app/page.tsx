@@ -85,7 +85,7 @@ function HomeContent() {
   return (
     <main className="home-shell">
       <header className="topbar">
-        <Link className="wordmark" href="/">FIND <span>IT</span></Link>
+        <Link className="wordmark" href="/"><Image src="/find-it-mark.jpg" alt="" width={52} height={52} priority />FIND <span>IT</span></Link>
         <span className="event-name">2026 재건 청년 하계수련회</span>
       </header>
 
@@ -127,7 +127,7 @@ function HomeContent() {
             return (
               <button type="button" className={`room-card ${selectedRoomKey === room.key ? "selected" : ""}`} key={room.key} style={{ "--accent": room.color, "--soft": room.soft } as React.CSSProperties} onClick={() => setSelectedRoomKey(selectedRoomKey === room.key ? null : room.key)} aria-pressed={selectedRoomKey === room.key}>
                 <div className="card-num">0{index + 1}</div>
-                <div className="card-mark">{room.mark}</div>
+                <div className="card-mark"><Image src={room.emblem} alt={`${room.name} 손그림 엠블럼`} width={180} height={180} /></div>
                 <h3>{room.name}</h3>
                 <p>{room.location}</p>
                 <div className="occupancy"><span>{inside.length}</span> / {room.maxTeams}개 조 활동 중</div>
@@ -139,6 +139,7 @@ function HomeContent() {
         </div>
         {selectedRoom && (
           <section className="room-focus" style={{ "--accent": selectedRoom.color, "--soft": selectedRoom.soft } as React.CSSProperties} aria-live="polite">
+            <Image className="room-focus-emblem" src={selectedRoom.emblem} alt="" width={150} height={150} />
             <div className="room-focus-copy">
               <span>SELECTED ROOM · {selectedRoom.location}</span>
               <h3>{selectedRoom.name}</h3>

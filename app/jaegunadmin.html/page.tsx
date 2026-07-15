@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import QRCode from "qrcode";
 import { elapsedRoomLabel, rooms, type ActivityLog, type TeamState } from "../../lib/find-data";
 
@@ -44,7 +45,7 @@ export default function AdminPage() {
   return (
     <main className="admin-shell">
       <aside>
-        <Link className="wordmark" href="/">FIND <span>IT</span></Link>
+        <Link className="wordmark" href="/"><Image src="/find-it-mark.jpg" alt="" width={52} height={52} />FIND <span>IT</span></Link>
         <div className="admin-title"><span>CONTROL ROOM</span><strong>관리자</strong></div>
         <nav><button className={tab === "status" ? "active" : ""} onClick={() => setTab("status")}><span>01</span> 실시간 현황</button><button className={tab === "guide" ? "active" : ""} onClick={() => setTab("guide")}><span>02</span> 운영 Q-sheet</button><button className={tab === "qr" ? "active" : ""} onClick={() => setTab("qr")}><span>03</span> QR 코드</button><button className={tab === "logs" ? "active" : ""} onClick={() => setTab("logs")}><span>04</span> 조별 로그</button></nav>
         <Link className="back-home" href="/">← 참가자 화면</Link>
@@ -58,7 +59,7 @@ export default function AdminPage() {
             <div className="admin-searching"><div><span>↝</span><h2>방을 찾으러 다니는 중..</h2><b>{states.filter((state) => !state.currentRoom).length}개 조</b></div><div className="admin-searching-list">{states.filter((state) => !state.currentRoom).length ? states.filter((state) => !state.currentRoom).map((state) => <span key={state.teamId}>{state.teamName}</span>) : <em>이동 중인 조가 없어요</em>}</div></div>
             <div className="admin-rooms">{rooms.map((room) => {
               const inRoom = states.filter((state) => state.currentRoom === room.key);
-              return <article key={room.key} style={{ "--accent": room.color, "--soft": room.soft } as React.CSSProperties}><div className="admin-room-top"><div className="admin-room-mark">{room.mark}</div><div><h2>{room.name}</h2><p>{room.location}</p></div><strong>{inRoom.length}<span>/{room.maxTeams}</span></strong></div><div className="admin-team-list">{inRoom.length ? inRoom.map((team) => <div key={team.teamId}><span className="status-dot active" /><b>{team.teamName}</b><small>{elapsedRoomLabel(team.enteredAt)}</small><button onClick={() => exitTeam(team.teamName, room.key)}>퇴장</button></div>) : <div className="admin-empty">아직 배정된 조가 없어요</div>}</div></article>;
+              return <article key={room.key} style={{ "--accent": room.color, "--soft": room.soft } as React.CSSProperties}><div className="admin-room-top"><div className="admin-room-mark"><Image src={room.emblem} alt="" width={80} height={80} /></div><div><h2>{room.name}</h2><p>{room.location}</p></div><strong>{inRoom.length}<span>/{room.maxTeams}</span></strong></div><div className="admin-team-list">{inRoom.length ? inRoom.map((team) => <div key={team.teamId}><span className="status-dot active" /><b>{team.teamName}</b><small>{elapsedRoomLabel(team.enteredAt)}</small><button onClick={() => exitTeam(team.teamName, room.key)}>퇴장</button></div>) : <div className="admin-empty">아직 배정된 조가 없어요</div>}</div></article>;
             })}</div>
           </>
         ) : tab === "guide" ? (
@@ -72,7 +73,7 @@ export default function AdminPage() {
         ) : tab === "qr" ? (
           <>
             <div className="admin-heading"><p>각 방의 입구와 출구에 해당 QR을 인쇄해 부착하세요.</p><h1>입장 · 퇴장 QR</h1></div>
-            <div className="qr-grid">{rooms.map((room) => <article key={room.key} style={{ "--accent": room.color, "--soft": room.soft } as React.CSSProperties}><div className="qr-room-title"><span>{room.mark}</span><div><h2>{room.name}</h2><p>{room.location}</p></div></div><div className="qr-pair">{(["enter", "exit"] as const).map((action) => <div className={`qr-box ${action}`} key={action}><div className="qr-label">{action === "enter" ? "입장 QR" : "퇴장 QR"}</div>{qrCodes[`${room.key}-${action}`] ? <img src={qrCodes[`${room.key}-${action}`]} alt={`${room.name} ${action === "enter" ? "입장" : "퇴장"} QR`} /> : <div className="qr-loading" />}<small>{action === "enter" ? "CHECK IN" : "CHECK OUT"}</small></div>)}</div></article>)}</div>
+            <div className="qr-grid">{rooms.map((room) => <article key={room.key} style={{ "--accent": room.color, "--soft": room.soft } as React.CSSProperties}><div className="qr-room-title"><span><Image src={room.emblem} alt="" width={72} height={72} /></span><div><h2>{room.name}</h2><p>{room.location}</p></div></div><div className="qr-pair">{(["enter", "exit"] as const).map((action) => <div className={`qr-box ${action}`} key={action}><div className="qr-label">{action === "enter" ? "입장 QR" : "퇴장 QR"}</div>{qrCodes[`${room.key}-${action}`] ? <img src={qrCodes[`${room.key}-${action}`]} alt={`${room.name} ${action === "enter" ? "입장" : "퇴장"} QR`} /> : <div className="qr-loading" />}<small>{action === "enter" ? "CHECK IN" : "CHECK OUT"}</small></div>)}</div></article>)}</div>
           </>
         ) : (
           <>

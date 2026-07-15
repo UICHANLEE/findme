@@ -12,7 +12,8 @@
 .room-card.selected { background: var(--soft); transform: translateY(-7px); z-index: 1; }
 .card-action { position: absolute; top: 24px; right: 20px; color: var(--accent); font: 700 11px var(--font-hand); opacity: 0; transform: translateX(5px); transition: opacity .2s, transform .2s; }
 .room-card:hover .card-action, .room-card.selected .card-action, .room-card:focus-visible .card-action { opacity: 1; transform: translateX(0); }
-.room-focus { margin-top: 18px; padding: 28px 30px; display: grid; grid-template-columns: minmax(240px,1fr) minmax(260px,1.2fr) auto; align-items: center; gap: 34px; border: 2px solid var(--accent); background: var(--soft); animation: focusOpen .42s cubic-bezier(.22,.8,.25,1) both; transform-origin: top; }
+.room-focus { margin-top: 18px; padding: 28px 30px; display: grid; grid-template-columns: 112px minmax(210px,1fr) minmax(260px,1.2fr) auto; align-items: center; gap: 28px; border: 2px solid var(--accent); background: var(--soft); animation: focusOpen .42s cubic-bezier(.22,.8,.25,1) both; transform-origin: top; }
+.room-focus-emblem { width: 112px; height: 112px; object-fit: cover; border-radius: 50%; mix-blend-mode: multiply; transform: rotate(-3deg); }
 @keyframes focusOpen { from { opacity: 0; transform: translateY(-12px) scaleY(.96); } to { opacity: 1; transform: translateY(0) scaleY(1); } }
 .room-focus-copy > span, .room-focus-status > div > span { color: var(--accent); font: 700 9px var(--font-geist-mono); letter-spacing: .14em; }
 .room-focus-copy h3 { margin: 6px 0 2px; font: 700 34px var(--font-hand); }
@@ -36,7 +37,7 @@
   .hero { grid-template-columns: minmax(0, 1fr); }
   .hero-copy { width: 100%; max-width: 680px; }
   .hero-art { width: min(820px, 100%); justify-self: center; }
-  .room-focus { grid-template-columns: 1fr 1fr; }
+  .room-focus { grid-template-columns: 100px 1fr 1fr; }
   .room-focus-actions { grid-column: 1 / -1; grid-template-columns: 1fr 1fr; }
 }
 
@@ -52,6 +53,7 @@
   .hero-art { pointer-events: none; }
   .card-action { opacity: 1; transform: none; }
   .room-focus { padding: 22px; grid-template-columns: 1fr; gap: 22px; }
+  .room-focus-emblem { width: 96px; height: 96px; }
   .room-focus-actions { grid-column: auto; }
 }
 

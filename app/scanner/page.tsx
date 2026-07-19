@@ -4,7 +4,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { BrowserQRCodeReader, type IScannerControls } from "@zxing/browser";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { cleanTeamName, getRoom } from "../../lib/find-data";
+import Image from "next/image";
+import { cleanTeamName, getRoom, type RoomKey } from "../../lib/find-data";
 
 type CameraState = "starting" | "scanning" | "processing" | "success" | "error";
 
@@ -19,7 +20,8 @@ export default function ScannerPage() {
   const [cameraState, setCameraState] = useState<CameraState>("starting");
   const [message, setMessage] = useState("카메라를 준비하고 있어요…");
   const [attempt, setAttempt] = useState(0);
-  const [transition, setTransition] = useState<{ action: "enter" | "exit"; color: string } | null>(null);
+  const [transition, setTransition] = useState<{ action: "enter" | "exit"; color: string; roomKey: RoomKey } | null>(null);
+  const transitionRoom = getRoom(transition?.roomKey ?? null);
 
   const handleCode = useCallback(async (rawValue: string) => {
     if (busyRef.current) return;
@@ -47,7 +49,7 @@ export default function ScannerPage() {
     }
 
     busyRef.current = true;
-    setTransition({ action, color: room.color });
+    setTransition({ action, color: room.color, roomKey: room.key });
     setCameraState("processing");
     setMessage(action === "enter" ? `${room.name} 입장 처리 중…` : `${room.name} 퇴장 처리 중…`);
     controlsRef.current?.stop();
@@ -69,7 +71,7 @@ export default function ScannerPage() {
       localStorage.setItem("find-team", confirmedTeam);
       setCameraState("success");
       setMessage(action === "enter" ? `${room.name} 입장이 완료됐어요!` : "퇴장이 완료됐어요. 다음 방을 찾아볼까요?");
-      await pause(850);
+      await pause(action === "exit" ? 1050 : 850);
       router.replace(action === "enter"
         ? `/room/${room.key}?team=${encodeURIComponent(confirmedTeam)}&welcome=1`
         : `/?team=${encodeURIComponent(confirmedTeam)}${data.collectedRoom ? `&collect=${data.collectedRoom}` : ""}`);
@@ -148,6 +150,12 @@ export default function ScannerPage() {
         <p><b>{cameraState === "success" ? "반영 완료!" : cameraState === "processing" ? "QR을 확인했어요" : cameraState === "error" ? "카메라 확인이 필요해요" : "QR을 비춰 주세요"}</b>{message}</p>
         {cameraState === "error" && <button type="button" onClick={retry}>카메라 다시 열기</button>}
       </section>
+      {cameraState === "success" && transition?.action === "exit" && transitionRoom && <div className="exit-logo-handoff" style={{ "--accent": transitionRoom.color, "--soft": transitionRoom.soft } as React.CSSProperties}>
+        <span>ROOM COMPLETE</span>
+        <Image src={transitionRoom.emblem} alt={`${transitionRoom.name} 로고에서 파츠를 꺼내는 중`} width={600} height={600} priority />
+        <strong>{transitionRoom.name}</strong>
+        <small>발견한 파츠를 포스터로 옮길게요</small>
+      </div>}
       <div className="camera-footer"><span className={cameraState === "scanning" ? "active" : ""} /> 스캔하면 별도 확인 없이 바로 반영됩니다</div>
     </main>
   );

@@ -63,7 +63,8 @@ export async function POST(request: Request) {
       teamName,
       room: room.key,
       action: body.action,
-      collectedRoom: collectedNow ? room.key : null,
+      // 퇴장할 때마다 홈에서 수집 모션을 재생한다. completedRooms에는 최초 1회만 기록된다.
+      collectedRoom: body.action === "exit" ? room.key : null,
       completedRooms,
       journeyComplete: completedRooms.length === 5,
     });

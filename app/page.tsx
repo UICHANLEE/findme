@@ -1,10 +1,19 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { elapsedRoomLabel, rooms, teamKey, type RoomKey, type TeamState } from "../lib/find-data";
+
+type FindRoom = (typeof rooms)[number];
+
+const artifactStyle = (room: FindRoom) => ({
+  "--part-left": `${room.collectionPosition.left}%`,
+  "--part-top": `${room.collectionPosition.top}%`,
+  "--part-width": `${room.collectionPosition.width}%`,
+  "--part-rotate": `${room.collectionPosition.rotate}deg`,
+} as React.CSSProperties);
 
 export default function Home() {
   return <Suspense fallback={<main className="home-shell" />}><HomeContent /></Suspense>;
@@ -19,6 +28,7 @@ function HomeContent() {
   const [ready, setReady] = useState(false);
   const [selectedRoomKey, setSelectedRoomKey] = useState<string | null>(null);
   const [justConnected, setJustConnected] = useState(false);
+  const journeyCanvasRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -88,6 +98,7 @@ function HomeContent() {
 
   return (
     <main className="home-shell">
+      {collectingRoom && <CollectionTransfer room={collectingRoom} completedRooms={completedRooms} canvasRef={journeyCanvasRef} />}
       <header className="topbar">
         <Link className="wordmark" href="/"><Image src="/find-it-mark.jpg" alt="" width={52} height={52} priority />FIND <span>IT</span></Link>
         <span className="event-name">2026 재건 청년 하계수련회</span>
@@ -116,16 +127,15 @@ function HomeContent() {
         </div>
         <div className={`hero-art journey-board ${journeyComplete ? "journey-complete" : ""}`} onPointerMove={moveHeroArt} onPointerLeave={resetHeroArt}>
           <div className="journey-board-heading"><span>OUR FIND POSTER</span><strong>{teamName || "우리 조"}</strong><b>{completedRooms.length}<small> / 5</small></b></div>
-          <div className="journey-canvas">
+          <div className="journey-canvas" ref={journeyCanvasRef}>
             <Image className="journey-base" src="/collection/maze-base.jpg" alt="다섯 요소를 모아 완성하는 손그림 미로 포스터" width={900} height={900} unoptimized priority />
             {rooms.map((room) => {
               const collected = completedRooms.includes(room.key) || collectingRoom?.key === room.key;
-              return <Image key={room.key} className={`journey-artifact artifact-${room.key} ${collected ? "collected" : ""} ${collectingRoom?.key === room.key ? "arriving" : ""}`} src={room.collectionAsset} alt={collected ? `${room.artifactName} 획득 완료` : `${room.artifactName} 미획득`} width={600} height={600} />;
+              return <Image key={room.key} style={artifactStyle(room)} className={`journey-artifact artifact-${room.key} ${collected ? "collected" : ""} ${collectingRoom?.key === room.key ? "arriving" : ""}`} src={room.collectionAsset} alt={collected ? `${room.artifactName} 획득 완료` : `${room.artifactName} 미획득`} width={room.collectionSize[0]} height={room.collectionSize[1]} />;
             })}
             {journeyComplete && <div className="journey-finale"><span>FIND IT!</span><strong>다섯 요소를 모두 찾았어요</strong></div>}
           </div>
           <div className="artifact-legend">{rooms.map((room) => <span className={completedRooms.includes(room.key) || collectingRoom?.key === room.key ? "done" : ""} key={room.key}><Image src={room.emblem} alt="" width={42} height={42} /><b>{room.artifactName}</b></span>)}</div>
-          {collectingRoom && <div className="collection-toast" style={{ "--accent": collectingRoom.color } as React.CSSProperties}><span>NEW FIND</span><strong>{collectingRoom.artifactName}</strong><small>{collectingRoom.name}에서 포스터로 이동했어요</small></div>}
         </div>
       </section>
 
@@ -175,5 +185,107 @@ function HomeContent() {
       </section>
       <footer><span>FIND IT</span><p>서로를 발견하는 다섯 개의 방</p><b>LIVE</b></footer>
     </main>
+  );
+}
+
+function CollectionTransfer({ room, completedRooms, canvasRef }: { room: FindRoom; completedRooms: RoomKey[]; canvasRef: React.RefObject<HTMLDivElement | null> }) {
+  const [moving, setMoving] = useState(false);
+  const [settled, setSettled] = useState(false);
+  const [finished, setFinished] = useState(false);
+  const [visible, setVisible] = useState(true);
+  const sourceRef = useRef<HTMLDivElement>(null);
+  const posterRef = useRef<HTMLDivElement>(null);
+  const targetRef = useRef<HTMLImageElement>(null);
+  const flyerRef = useRef<HTMLImageElement>(null);
+
+  useEffect(() => {
+    let flyerAnimation: Animation | null = null;
+    const timers: number[] = [];
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const mobile = window.matchMedia("(max-width: 700px)").matches;
+
+    if (mobile) canvasRef.current?.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "center" });
+
+    const prepare = () => {
+      const canvas = canvasRef.current;
+      const source = sourceRef.current;
+      const poster = posterRef.current;
+      const target = targetRef.current;
+      const flyer = flyerRef.current;
+      if (!canvas || !source || !poster || !target || !flyer) return;
+
+      const canvasRect = canvas.getBoundingClientRect();
+      poster.style.left = `${canvasRect.left}px`;
+      poster.style.top = `${canvasRect.top}px`;
+      poster.style.width = `${canvasRect.width}px`;
+      poster.style.height = `${canvasRect.height}px`;
+
+      const sourceRect = source.getBoundingClientRect();
+      const startWidth = Math.min(sourceRect.width * 0.55, 150);
+      const startHeight = startWidth * room.collectionSize[1] / room.collectionSize[0];
+      const startLeft = sourceRect.left + sourceRect.width / 2 - startWidth / 2;
+      const startTop = sourceRect.top + sourceRect.height / 2 - startHeight / 2;
+      const targetLeft = canvasRect.left + target.offsetLeft;
+      const targetTop = canvasRect.top + target.offsetTop;
+      const targetWidth = target.offsetWidth;
+      const targetHeight = target.offsetHeight;
+      const midWidth = Math.max(startWidth, targetWidth * 0.72);
+      const midHeight = midWidth * room.collectionSize[1] / room.collectionSize[0];
+
+      Object.assign(flyer.style, {
+        left: `${startLeft}px`,
+        top: `${startTop}px`,
+        width: `${startWidth}px`,
+        height: `${startHeight}px`,
+      });
+
+      if (reducedMotion) {
+        setMoving(true);
+        setSettled(true);
+        timers.push(window.setTimeout(() => setVisible(false), 320));
+        return;
+      }
+
+      setMoving(true);
+      flyerAnimation = flyer.animate([
+        { left: `${startLeft}px`, top: `${startTop}px`, width: `${startWidth}px`, height: `${startHeight}px`, opacity: 0, transform: "scale(.45) rotate(-12deg)" },
+        { offset: 0.14, opacity: 1, transform: "scale(.9) rotate(-5deg)" },
+        { offset: 0.55, left: `${(startLeft + targetLeft) / 2}px`, top: `${Math.min(startTop, targetTop) - 46}px`, width: `${midWidth}px`, height: `${midHeight}px`, transform: "scale(1.05) rotate(8deg)" },
+        { offset: 0.88, left: `${targetLeft}px`, top: `${targetTop}px`, width: `${targetWidth}px`, height: `${targetHeight}px`, opacity: 1, transform: `scale(1.08) rotate(${room.collectionPosition.rotate}deg)` },
+        { left: `${targetLeft}px`, top: `${targetTop}px`, width: `${targetWidth}px`, height: `${targetHeight}px`, opacity: 0, transform: `scale(1) rotate(${room.collectionPosition.rotate}deg)` },
+      ], { duration: 1850, easing: "cubic-bezier(.2,.82,.2,1)", fill: "forwards" });
+
+      timers.push(window.setTimeout(() => setSettled(true), 1580));
+      timers.push(window.setTimeout(() => setFinished(true), 2050));
+      timers.push(window.setTimeout(() => setVisible(false), 2480));
+    };
+
+    timers.push(window.setTimeout(prepare, mobile ? 480 : 90));
+    return () => {
+      timers.forEach((timer) => window.clearTimeout(timer));
+      flyerAnimation?.cancel();
+    };
+  }, [canvasRef, room]);
+
+  if (!visible) return null;
+
+  return (
+    <section className={`collection-transfer ${moving ? "is-moving" : ""} ${settled ? "is-settled" : ""} ${finished ? "is-finished" : ""}`} style={{ "--accent": room.color, "--soft": room.soft } as React.CSSProperties} aria-live="polite">
+      <div className="transfer-room-panel">
+        <span>ROOM COMPLETE · 퇴장 완료</span>
+        <div className="transfer-source-logo" ref={sourceRef}>
+          <Image src={room.emblem} alt={`${room.name} 로고`} width={600} height={600} priority />
+        </div>
+        <h2>{room.name}</h2>
+        <p>로고에서 <b>{room.artifactName}</b>을 발견했어요</p>
+      </div>
+      <div className="transfer-poster" ref={posterRef} aria-label={`${room.artifactName}이 포스터의 정확한 위치로 이동 중`}>
+        <Image className="transfer-poster-base" src="/collection/maze-base.jpg" alt="" width={900} height={900} unoptimized priority />
+        {rooms.filter((item) => item.key !== room.key && completedRooms.includes(item.key)).map((item) => <Image key={item.key} style={artifactStyle(item)} className={`journey-artifact artifact-${item.key} collected`} src={item.collectionAsset} alt="" width={item.collectionSize[0]} height={item.collectionSize[1]} />)}
+        <Image ref={targetRef} style={artifactStyle(room)} className={`journey-artifact transfer-target artifact-${room.key} collected`} src={room.collectionAsset} alt="" width={room.collectionSize[0]} height={room.collectionSize[1]} />
+      </div>
+      <Image ref={flyerRef} className={`transfer-flyer transfer-flyer-${room.key}`} src={room.collectionAsset} alt={`${room.artifactName} 이동 중`} width={room.collectionSize[0]} height={room.collectionSize[1]} priority />
+      <div className="transfer-caption"><span>NEW FIND</span><strong>{room.artifactName}</strong><small>포스터의 빈자리를 채웠어요</small></div>
+    </section>
   );
 }

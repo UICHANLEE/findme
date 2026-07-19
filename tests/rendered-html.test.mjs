@@ -23,6 +23,11 @@ test("participant and themed-room experiences are present", async () => {
   assert.match(home, /moveHeroArt/);
   assert.match(home, /journey-board/);
   assert.match(home, /journey-artifact/);
+  assert.match(home, /CollectionTransfer/);
+  assert.match(home, /transfer-source-logo/);
+  assert.match(home, /transfer-flyer/);
+  assert.match(home, /room\.emblem/);
+  assert.match(home, /collectionPosition/);
   assert.match(home, /collection\/maze-base\.jpg/);
   assert.match(home, /collectingRoom/);
   assert.match(room, /퇴장 QR/);
@@ -61,7 +66,12 @@ test("administrator, QR, persistence, and deployment output are present", async 
   await access(new URL("public/favicon.svg", root));
   await access(new URL("public/collection/maze-base.jpg", root));
   await access(new URL("public/collection/sound-passage.jpg", root));
-  for (const key of ["eyes", "sound", "body", "heart", "grace"]) await access(new URL(`public/emblems/${key}.webp`, root));
+  await access(new URL("public/collection/sound-gate.png", root));
+  await access(new URL("public/collection/body-route.png", root));
+  for (const key of ["eyes", "sound", "body", "heart", "grace"]) {
+    await access(new URL(`public/emblems/${key}.jpg`, root));
+    await access(new URL(`public/emblems/${key}.webp`, root));
+  }
 });
 
 test("in-app camera scans a saved team's QR without another name prompt", async () => {

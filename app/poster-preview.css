@@ -60,5 +60,5 @@
 
 @media (prefers-reduced-motion: reduce) {
   .hero-art, .room-card, .room-focus-actions a, .room-focus-actions button { transition: none; transform: none; }
-  .team-connected.arrived, .room-focus, .journey-artifact.arriving, .journey-finale, .journey-complete .artifact-grace, .collection-toast { animation: none; }
+  .team-connected.arrived, .room-focus, .journey-artifact.arriving, .journey-finale, .journey-complete .artifact-grace, .collection-toast, .collection-transfer, .collection-transfer *, .exit-logo-handoff { animation: none; }
 }

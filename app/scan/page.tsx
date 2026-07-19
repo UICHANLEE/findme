@@ -42,7 +42,7 @@ function ScanContent() {
         const savedName = data.teamName || name;
         localStorage.setItem("find-team", savedName);
         setDone(true);
-        await new Promise((resolve) => window.setTimeout(resolve, 850));
+        await new Promise((resolve) => window.setTimeout(resolve, action === "exit" ? 1050 : 850));
         router.replace(action === "enter"
           ? `/room/${room.key}?team=${encodeURIComponent(savedName)}&welcome=1`
           : `/?team=${encodeURIComponent(savedName)}${data.collectedRoom ? `&collect=${data.collectedRoom}` : ""}`);

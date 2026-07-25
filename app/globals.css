@@ -24,7 +24,7 @@ button { cursor: pointer; }
 .journey-board-heading > b { color: var(--poster-blue); font: 700 22px var(--font-geist-mono); }
 .journey-board-heading > b small { color: #8d897f; font-size: 9px; }
 .journey-canvas { position: relative; width: 100%; aspect-ratio: 1; overflow: hidden; border: 1px solid rgba(23,23,19,.08); background: var(--paper); }
-.journey-canvas .journey-base { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; mix-blend-mode: multiply; }
+.journey-canvas .journey-base { position: absolute; z-index: 0; inset: 0; width: 100%; height: 100%; object-fit: cover; mix-blend-mode: multiply; }
 .journey-artifact { position: absolute; z-index: 2; left: var(--part-left); top: var(--part-top); width: var(--part-width); height: auto; object-fit: contain; border-radius: 50%; opacity: 0; mix-blend-mode: multiply; filter: saturate(.8); transform: rotate(var(--part-rotate, 0deg)); transform-origin: center; transition: opacity .35s ease, filter .35s ease; }
 .journey-artifact.collected { opacity: 1; filter: saturate(1.05); }
 .artifact-sound, .artifact-body { border-radius: 0; mix-blend-mode: normal; }
@@ -50,11 +50,29 @@ button { cursor: pointer; }
 .transfer-caption span { font: 700 8px var(--font-geist-mono); letter-spacing: .17em; opacity: .72; }
 .transfer-caption strong { margin-top: 4px; font: 700 25px var(--font-hand); }
 .transfer-caption small { font-size: 9px; opacity: .78; }
+.transfer-finale-caption { position: fixed; z-index: 6; left: 50%; bottom: 7vh; min-width: min(360px, calc(100vw - 36px)); padding: 15px 21px 14px; display: grid; text-align: center; color: white; background: var(--poster-blue); border: 3px solid var(--ink); border-radius: 6px 11px 7px 9px; box-shadow: 8px 9px 0 rgba(23,23,19,.18); opacity: 0; transform: translate(-50%,24px) rotate(-1deg); }
+.transfer-finale-caption span { color: #f5c242; font: 800 8px var(--font-geist-mono); letter-spacing: .18em; }
+.transfer-finale-caption strong { margin-top: 4px; font: 700 28px var(--font-hand); }
+.transfer-finale-caption small { margin-top: 2px; font-size: 9px; opacity: .78; }
 .collection-transfer.is-moving .transfer-room-panel { animation: transferRoomExit 1.6s .08s cubic-bezier(.65,0,.35,1) forwards; }
 .collection-transfer.is-moving .transfer-source-logo { animation: transferLogoRelease 1.22s cubic-bezier(.2,.82,.2,1) forwards; }
 .collection-transfer.is-moving .transfer-poster { animation: transferPosterEnter 1.75s .08s cubic-bezier(.2,.82,.2,1) forwards; }
 .collection-transfer.is-moving .transfer-caption { animation: transferCaption 1.4s .72s cubic-bezier(.2,.82,.2,1) both; }
 .collection-transfer.is-settled .transfer-target { opacity: 1 !important; animation: transferTargetSettle .42s cubic-bezier(.2,.82,.2,1) both; }
+.collection-transfer.is-gate-opening .transfer-poster .artifact-sound { opacity: 1 !important; animation: gateBreakthrough .82s cubic-bezier(.2,.82,.2,1) both; }
+.collection-transfer.is-gate-opening .transfer-poster .journey-artifact:not(.artifact-sound) { animation: assembledPulse .82s cubic-bezier(.2,.82,.2,1) both; }
+.collection-transfer.is-final-scene .transfer-final-picture { opacity: 1; clip-path: none; }
+.collection-transfer.is-gate-opening.is-final-scene .transfer-poster .journey-artifact.artifact-body { animation: routeSignal .72s cubic-bezier(.2,.82,.2,1) both; }
+.collection-transfer.is-gate-opening.is-final-scene .transfer-poster .journey-artifact.artifact-heart { animation: compassCue .82s .04s cubic-bezier(.2,.82,.2,1) both; }
+.collection-transfer.is-gate-opening.is-final-scene .transfer-poster .journey-artifact.artifact-sound { animation: gateEcho .74s .1s cubic-bezier(.2,.82,.2,1) both; }
+.collection-transfer.is-gate-opening.is-final-scene .transfer-poster .journey-artifact.artifact-eyes { animation: magnifierSearch 2.08s .12s cubic-bezier(.2,.74,.2,1) both; }
+.collection-transfer.is-gate-opening.is-final-scene .transfer-poster .journey-artifact.artifact-grace { animation: crossFound .88s 1.62s cubic-bezier(.2,.82,.2,1) both; }
+.collection-transfer.is-final-scene .route-segment-1 { animation: routeSegmentIn .34s .34s ease-out both; }
+.collection-transfer.is-final-scene .route-segment-2 { animation: routeSegmentIn .34s .65s ease-out both; }
+.collection-transfer.is-final-scene .route-segment-3 { animation: routeSegmentIn .34s .96s ease-out both; }
+.collection-transfer.is-final-scene .route-segment-4 { animation: routeSegmentIn .34s 1.27s ease-out both; }
+.collection-transfer.is-final-scene .route-segment-5 { animation: routeSegmentIn .34s 1.56s ease-out both; }
+.collection-transfer.is-final-scene .transfer-finale-caption { animation: finaleCaption 1.25s 1.5s cubic-bezier(.2,.82,.2,1) both; }
 .collection-transfer.is-finished { animation: transferStageFinish .43s ease forwards; }
 @keyframes transferRoomExit { 55% { opacity: 1; } to { opacity: 0; transform: translateX(-42vw) scale(.94); } }
 @keyframes transferLogoRelease { 40% { transform: rotate(2deg) scale(1.04); } to { opacity: .18; transform: translateX(-18vw) rotate(-8deg) scale(.78); filter: grayscale(.7); } }
@@ -62,6 +80,16 @@ button { cursor: pointer; }
 @keyframes transferTargetSettle { from { opacity: 0; transform: scale(.88) rotate(var(--part-rotate, 0deg)); } 70% { opacity: 1; transform: scale(1.08) rotate(var(--part-rotate, 0deg)); } to { opacity: 1; transform: scale(1) rotate(var(--part-rotate, 0deg)); } }
 @keyframes transferCaption { 0% { opacity: 0; transform: translateY(20px) rotate(1deg); } 28%, 76% { opacity: 1; transform: translateY(0) rotate(-1deg); } to { opacity: 0; transform: translateY(-8px) rotate(-1deg); } }
 @keyframes transferStageFinish { to { opacity: 0; background: transparent; } }
+@keyframes gateBreakthrough { 0% { left: var(--part-left); top: var(--part-top); width: var(--part-width); transform: scale(.82) rotate(var(--part-rotate)); filter: saturate(.75); } 38% { left: 24%; top: 64%; width: 9%; transform: scale(1.18) rotate(calc(var(--gate-rotate) - 5deg)); filter: saturate(1.35) drop-shadow(0 0 10px rgba(233,84,47,.48)); } 72% { transform: scale(.94) rotate(calc(var(--gate-rotate) + 2deg)); } 100% { left: var(--gate-left); top: var(--gate-top); width: var(--gate-width); transform: scale(1) rotate(var(--gate-rotate)); filter: saturate(1.08); } }
+@keyframes assembledPulse { 50% { transform: scale(1.06) rotate(var(--part-rotate,0deg)); filter: saturate(1.25) drop-shadow(0 0 7px rgba(232,169,19,.28)); } }
+@keyframes finalRouteReveal { from { opacity: 0; clip-path: circle(0 at 28% 65%); } to { opacity: 1; clip-path: circle(125% at 28% 65%); } }
+@keyframes routeSignal { 0%,100% { transform: scale(1); filter: saturate(1.05); } 45% { transform: scale(1.09) translate(2%,-2%); filter: saturate(1.55) drop-shadow(0 0 7px rgba(233,84,47,.42)); } }
+@keyframes compassCue { 0% { transform: rotate(0) scale(1); } 28% { transform: rotate(-13deg) scale(1.05); } 58% { transform: rotate(10deg) scale(1.08); filter: saturate(1.35) drop-shadow(0 0 8px rgba(139,84,198,.35)); } 100% { transform: rotate(0) scale(1); filter: saturate(1.05); } }
+@keyframes gateEcho { 0%,100% { left: var(--gate-left); top: var(--gate-top); width: var(--gate-width); transform: rotate(var(--gate-rotate)) scale(1); filter: saturate(1.08); } 48% { left: var(--gate-left); top: var(--gate-top); width: var(--gate-width); transform: rotate(calc(var(--gate-rotate) - 4deg)) scale(1.18); filter: saturate(1.55) drop-shadow(0 0 9px rgba(233,84,47,.55)); } }
+@keyframes magnifierSearch { 0%,100% { transform: rotate(var(--part-rotate)) scale(1); filter: saturate(1.05); } 18% { transform: translate(-165%,115%) rotate(-14deg) scale(.54); filter: saturate(1.22) drop-shadow(0 8px 8px rgba(0,0,0,.18)); } 38% { transform: translate(-95%,140%) rotate(-5deg) scale(.55); } 58% { transform: translate(-55%,92%) rotate(7deg) scale(.58); } 76% { transform: translate(-82%,58%) rotate(-10deg) scale(.6); } 90% { transform: translate(-92%,88%) rotate(4deg) scale(.55); filter: saturate(1.35) drop-shadow(0 0 10px rgba(53,104,232,.28)); } }
+@keyframes routeSegmentIn { from { opacity: 0; transform: scale(.985); filter: saturate(.7); } 58% { opacity: 1; filter: saturate(1.5) drop-shadow(0 0 5px rgba(233,84,47,.48)); } to { opacity: 1; transform: scale(1); filter: saturate(1.05); } }
+@keyframes crossFound { 0% { transform: scale(.92); filter: saturate(.9); } 55% { transform: scale(1.13); filter: saturate(1.3) drop-shadow(0 0 11px rgba(232,169,19,.48)); } 100% { transform: scale(1); filter: saturate(1.05); } }
+@keyframes finaleCaption { 0% { opacity: 0; transform: translate(-50%,24px) rotate(-1deg); } 22%, 82% { opacity: 1; transform: translate(-50%,0) rotate(-1deg); } to { opacity: 0; transform: translate(-50%,-10px) rotate(-1deg); } }
 .artifact-legend { padding: 12px 4px 3px; display: grid; grid-template-columns: repeat(5,1fr); gap: 5px; border-top: 1px solid var(--line); }
 .artifact-legend span { display: grid; justify-items: center; gap: 3px; color: #9c988e; opacity: .42; }
 .artifact-legend span.done { color: var(--ink); opacity: 1; }
@@ -72,12 +100,15 @@ button { cursor: pointer; }
 .collection-toast strong { margin-top: 4px; font: 700 25px var(--font-hand); }
 .collection-toast small { font-size: 9px; opacity: .78; }
 @keyframes toastFind { 0% { opacity: 0; transform: translateY(24px) rotate(2deg); } 18%, 76% { opacity: 1; transform: translateY(0) rotate(-1deg); } 100% { opacity: 0; transform: translateY(-12px) rotate(-1deg); pointer-events: none; } }
-.journey-finale { position: absolute; z-index: 5; inset: 34% 24%; display: grid; place-content: center; text-align: center; color: var(--poster-blue); background: rgba(246,240,229,.9); border: 3px solid var(--poster-yellow); border-radius: 50%; animation: finaleReveal 3.5s 1.2s cubic-bezier(.2,.82,.2,1) both; pointer-events: none; }
-.journey-finale span { font: 700 37px var(--font-hand); }
-.journey-finale strong { font-size: 8px; }
-.journey-complete .artifact-grace { animation: crossGlow 1.8s 1.7s ease-in-out 2; }
-@keyframes finaleReveal { 0% { opacity: 0; transform: scale(.4) rotate(-8deg); } 18%, 76% { opacity: 1; transform: scale(1) rotate(0); } 100% { opacity: 0; transform: scale(1.08) rotate(1deg); } }
-@keyframes crossGlow { 50% { transform: scale(1.16); filter: saturate(1.2) drop-shadow(0 0 16px rgba(232,169,19,.7)); } }
+.journey-found-picture, .transfer-final-picture { position: absolute; z-index: 1; inset: 0; overflow: hidden; pointer-events: none; }
+.journey-found-picture { animation: finalRouteReveal 1.05s cubic-bezier(.2,.82,.2,1) both; }
+.transfer-final-picture { opacity: 0; clip-path: circle(0 at 28% 65%); }
+.journey-final-route, .journey-route-segment { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.journey-route-segment { opacity: 0; }
+.journey-complete .artifact-grace { animation: crossFound .9s .28s cubic-bezier(.2,.82,.2,1) both; }
+.journey-complete .artifact-eyes { translate: var(--piece-react-x,0) var(--piece-react-y,0); transition: translate .28s cubic-bezier(.2,.82,.2,1), filter .28s ease; }
+.journey-complete .artifact-heart { rotate: var(--compass-react,0deg); transition: rotate .28s cubic-bezier(.2,.82,.2,1), filter .28s ease; }
+.journey-complete:hover .artifact-eyes, .journey-complete:hover .artifact-heart { filter: saturate(1.18) drop-shadow(0 0 6px rgba(25,63,174,.16)); }
 .eyebrow { width: max-content; padding: 5px 12px; border: 2px solid var(--poster-green); border-radius: 99px; color: var(--poster-green); font: 700 15px var(--font-hand); letter-spacing: .08em; transform: rotate(-1.2deg); }
 .hero h1 { color: var(--poster-blue); font: 700 clamp(82px, 9vw, 146px)/.76 var(--font-hand); letter-spacing: -.08em; margin: 30px 0 20px; position: relative; z-index: 1; transform: rotate(-1deg); }
 .hero h1 span { color: var(--poster-blue); font-size: 1.18em; }
@@ -389,6 +420,8 @@ footer b { margin-left: auto; color: #1d9a6c; }
   .transfer-room-panel h2 { font-size: 38px; }
   .transfer-caption { right: 18px; bottom: 24px; min-width: 165px; padding: 11px 14px; }
   .transfer-caption strong { font-size: 21px; }
+  .transfer-finale-caption { bottom: 24px; padding: 12px 16px; }
+  .transfer-finale-caption strong { font-size: 23px; }
   .scribble-line { margin-bottom: 18px; }
   .team-picker span { width: 66px; }
   .team-picker input { font-size: 15px; }
@@ -450,4 +483,5 @@ footer b { margin-left: auto; color: #1d9a6c; }
   .scan-success.scan-enter, .camera-success.camera-enter { animation: none; }
   .scan-success.scan-exit .scan-orbit, .scan-success.scan-exit .scan-panel,
   .exit-logo-handoff, .collection-transfer *, .journey-artifact.arriving { animation: none !important; }
+  .collection-transfer.is-final-scene .transfer-final-picture { opacity: 1; clip-path: none; }
 }

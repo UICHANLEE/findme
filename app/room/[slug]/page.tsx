@@ -4,7 +4,7 @@ import { Suspense, useEffect, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { getRoom, teamKey, type TeamState } from "../../../lib/find-data";
+import { getRoom, rooms, teamKey, type TeamState } from "../../../lib/find-data";
 
 export default function RoomPage() {
   return <Suspense fallback={<main className="experience" />}><RoomContent /></Suspense>;
@@ -32,7 +32,8 @@ function RoomContent() {
         if (!active || !state) return;
         if (state.currentRoom !== params.slug) {
           const collected = state.completedRooms?.includes(room?.key ?? "eyes");
-          router.replace(`/?team=${encodeURIComponent(state.teamName)}${collected && room ? `&collect=${room.key}` : ""}`);
+          const journeyComplete = rooms.every((item) => state.completedRooms?.includes(item.key));
+          router.replace(`/?team=${encodeURIComponent(state.teamName)}${collected && room ? `&collect=${room.key}` : ""}${collected && journeyComplete ? "&finale=1" : ""}`);
         }
         setEnteredAt(state.enteredAt);
       } catch { /* next poll retries */ }

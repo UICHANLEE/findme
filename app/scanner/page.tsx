@@ -60,7 +60,7 @@ export default function ScannerPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ teamName: savedTeam, room: room.key, action }),
       });
-      const data = await response.json() as { code?: string; error?: string; teamName?: string; collectedRoom?: string | null };
+      const data = await response.json() as { code?: string; error?: string; teamName?: string; collectedRoom?: string | null; journeyComplete?: boolean };
       if (data.code === "ROOM_FULL") {
         window.alert(data.error || "현재 입장 가능한 조가 모두 찼어요. 다른 방을 찾아가세요!!");
         router.replace("/");
@@ -74,7 +74,7 @@ export default function ScannerPage() {
       await pause(action === "exit" ? 1050 : 850);
       router.replace(action === "enter"
         ? `/room/${room.key}?team=${encodeURIComponent(confirmedTeam)}&welcome=1`
-        : `/?team=${encodeURIComponent(confirmedTeam)}${data.collectedRoom ? `&collect=${data.collectedRoom}` : ""}`);
+        : `/?team=${encodeURIComponent(confirmedTeam)}${data.collectedRoom ? `&collect=${data.collectedRoom}` : ""}${data.journeyComplete && data.collectedRoom ? "&finale=1" : ""}`);
     } catch (caught) {
       busyRef.current = false;
       setCameraState("error");

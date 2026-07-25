@@ -29,9 +29,17 @@ test("participant and themed-room experiences are present", async () => {
   assert.match(home, /room\.emblem/);
   assert.match(home, /collectionPosition/);
   assert.match(home, /collection\/maze-base\.jpg/);
+  assert.match(home, /collection\/maze-final-route\.png/);
+  assert.match(home, /maze-route-segment-\$\{segment\}\.webp/);
+  assert.match(home, /JourneyFoundPicture/);
+  assert.match(home, /is-gate-opening/);
+  assert.match(home, /십자가를 찾았어요/);
   assert.match(home, /collectingRoom/);
+  assert.match(data, /left: 19\.9, top: 60\.3, width: 10, rotate: 38/);
   assert.match(room, /퇴장 QR/);
   assert.match(room, /room-threshold/);
+  assert.match(room, /journeyComplete/);
+  assert.match(room, /finale=1/);
   for (const name of ["눈으로 find", "소리로 find", "몸으로 find", "마음으로 find", "은혜로 find"]) assert.match(data, new RegExp(name));
 });
 
@@ -65,9 +73,16 @@ test("administrator, QR, persistence, and deployment output are present", async 
   await access(new URL(".next/BUILD_ID", root));
   await access(new URL("public/favicon.svg", root));
   await access(new URL("public/collection/maze-base.jpg", root));
+  await access(new URL("public/collection/maze-final-route.png", root));
+  for (let segment = 1; segment <= 5; segment += 1) {
+    await access(new URL(`public/collection/maze-route-segment-${segment}.webp`, root));
+  }
   await access(new URL("public/collection/sound-passage.jpg", root));
-  await access(new URL("public/collection/sound-gate.png", root));
+  await access(new URL("public/collection/sound-piece.webp", root));
   await access(new URL("public/collection/body-route.png", root));
+  await access(new URL("public/collection/eyes-piece.webp", root));
+  await access(new URL("public/collection/heart-piece.webp", root));
+  await access(new URL("public/collection/grace-piece.webp", root));
   for (const key of ["eyes", "sound", "body", "heart", "grace"]) {
     await access(new URL(`public/emblems/${key}.jpg`, root));
     await access(new URL(`public/emblems/${key}.webp`, root));
@@ -93,6 +108,10 @@ test("in-app camera scans a saved team's QR without another name prompt", async 
   assert.match(check, /otherTeamsInside >= room\.maxTeams/);
   assert.match(scanner, /window\.alert/);
   assert.match(scanner, /data\.collectedRoom/);
+  assert.match(scanner, /data\.journeyComplete/);
+  assert.match(scan, /data\.journeyComplete/);
+  assert.match(check, /collectedRoom: collectedNow \? room\.key : null/);
+  assert.match(check, /rooms\.every/);
   assert.match(scanner, /camera-\$\{transition\.action\}/);
   assert.doesNotMatch(home, /jaegunadmin\.html/);
 });

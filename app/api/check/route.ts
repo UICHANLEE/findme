@@ -1,4 +1,4 @@
-import { cleanTeamName, getRoom, teamKey, type TeamState } from "../../../lib/find-data";
+import { cleanTeamName, getRoom, rooms, teamKey, type TeamState } from "../../../lib/find-data";
 import { appendActivityLog, getTeamStates, saveTeamState } from "../../../lib/find-store";
 
 export const runtime = "nodejs";
@@ -63,10 +63,10 @@ export async function POST(request: Request) {
       teamName,
       room: room.key,
       action: body.action,
-      // 퇴장할 때마다 홈에서 수집 모션을 재생한다. completedRooms에는 최초 1회만 기록된다.
-      collectedRoom: body.action === "exit" ? room.key : null,
+      // 같은 방의 출구 QR을 다시 찍어도 수집·완성 모션은 최초 한 번만 재생한다.
+      collectedRoom: collectedNow ? room.key : null,
       completedRooms,
-      journeyComplete: completedRooms.length === 5,
+      journeyComplete: rooms.every((item) => completedRooms.includes(item.key)),
     });
   } catch (error) {
     return Response.json({ error: error instanceof Error ? error.message : "처리하지 못했습니다." }, { status: 500 });

@@ -61,3 +61,10 @@ export type ActivityLog = {
   timestamp: string;
   durationSeconds: number | null;
 };
+
+export type TalentRecord = {
+  teamId: string;
+  teamName: string;
+  amounts: Record<RoomKey, number>;
+  updatedAt: string;
+};

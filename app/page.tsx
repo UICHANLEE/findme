@@ -8,6 +8,14 @@ import { elapsedRoomLabel, rooms, teamKey, type RoomKey, type TeamState } from "
 
 type FindRoom = (typeof rooms)[number];
 const routeSegments = [1, 2, 3, 4, 5] as const;
+const soundRoom = rooms.find((room) => room.key === "sound")!;
+const roomAfterglow: Record<RoomKey, { line: string; closing: string }> = {
+  eyes: { line: "서로를 바라볼 때, 보이지 않던 길이 보였어요.", closing: "오늘 발견한 시선이 다음 사람을 비추기를" },
+  sound: { line: "서로의 목소리를 들을 때, 막혀 있던 길이 열렸어요.", closing: "오늘 들은 마음을 오래 기억하기를" },
+  body: { line: "함께 움직인 걸음이, 하나의 길이 되었어요.", closing: "오늘 맞춘 걸음이 다음 길에도 이어지기를" },
+  heart: { line: "마음을 모을 때, 우리는 길을 잃지 않았어요.", closing: "오늘 나눈 마음이 서로의 나침반이 되기를" },
+  grace: { line: "마침내 찾은 것은, 우리를 기다리고 있던 은혜였어요.", closing: "찾는 모든 순간에도 이미 함께하셨음을" },
+};
 
 const artifactStyle = (room: FindRoom, assembled = false) => ({
   "--part-left": `${room.key === "sound" && !assembled ? 20.5 : room.collectionPosition.left}%`,
@@ -224,6 +232,7 @@ function CollectionTransfer({ room, completedRooms, canvasRef, finalCompletion, 
   const [settled, setSettled] = useState(false);
   const [gateOpening, setGateOpening] = useState(false);
   const [finalScene, setFinalScene] = useState(false);
+  const [afterglow, setAfterglow] = useState(false);
   const [finished, setFinished] = useState(false);
   const [visible, setVisible] = useState(true);
   const sourceRef = useRef<HTMLDivElement>(null);
@@ -286,30 +295,32 @@ function CollectionTransfer({ room, completedRooms, canvasRef, finalCompletion, 
         return;
       }
 
-      setMoving(true);
+      timers.push(window.setTimeout(() => setMoving(true), 580));
       flyerAnimation = flyer.animate([
         { left: `${startLeft}px`, top: `${startTop}px`, width: `${startWidth}px`, height: `${startHeight}px`, opacity: 0, transform: "scale(.45) rotate(-12deg)" },
-        { offset: 0.14, opacity: 1, transform: "scale(.9) rotate(-5deg)" },
-        { offset: 0.55, left: `${(startLeft + targetLeft) / 2}px`, top: `${Math.min(startTop, targetTop) - 46}px`, width: `${midWidth}px`, height: `${midHeight}px`, transform: "scale(1.05) rotate(8deg)" },
-        { offset: 0.88, left: `${targetLeft}px`, top: `${targetTop}px`, width: `${targetWidth}px`, height: `${targetHeight}px`, opacity: 1, transform: `scale(1.08) rotate(${room.collectionPosition.rotate}deg)` },
+        { offset: 0.18, opacity: 1, transform: "scale(.9) rotate(-5deg)" },
+        { offset: 0.56, left: `${(startLeft + targetLeft) / 2}px`, top: `${Math.min(startTop, targetTop) - 54}px`, width: `${midWidth}px`, height: `${midHeight}px`, transform: "scale(1.04) rotate(7deg)" },
+        { offset: 0.9, left: `${targetLeft}px`, top: `${targetTop}px`, width: `${targetWidth}px`, height: `${targetHeight}px`, opacity: 1, transform: `scale(1.06) rotate(${room.collectionPosition.rotate}deg)` },
         { left: `${targetLeft}px`, top: `${targetTop}px`, width: `${targetWidth}px`, height: `${targetHeight}px`, opacity: 0, transform: `scale(1) rotate(${room.collectionPosition.rotate}deg)` },
-      ], { duration: 1850, easing: "cubic-bezier(.2,.82,.2,1)", fill: "forwards" });
+      ], { duration: 3380, delay: 580, easing: "cubic-bezier(.18,.72,.2,1)", fill: "forwards" });
 
-      timers.push(window.setTimeout(() => setSettled(true), 1580));
+      timers.push(window.setTimeout(() => setSettled(true), 3600));
       if (finalCompletion) {
-        timers.push(window.setTimeout(() => setGateOpening(true), 2070));
-        timers.push(window.setTimeout(() => setFinalScene(true), 2720));
-        timers.push(window.setTimeout(() => setFinished(true), 5350));
+        timers.push(window.setTimeout(() => setGateOpening(true), 4650));
+        timers.push(window.setTimeout(() => setFinalScene(true), 5950));
+        timers.push(window.setTimeout(() => setAfterglow(true), 9100));
+        timers.push(window.setTimeout(() => setFinished(true), 11150));
         timers.push(window.setTimeout(() => {
           setVisible(false);
           onDone();
-        }, 5820));
+        }, 12000));
       } else {
-        timers.push(window.setTimeout(() => setFinished(true), 2050));
+        timers.push(window.setTimeout(() => setAfterglow(true), 4050));
+        timers.push(window.setTimeout(() => setFinished(true), 5850));
         timers.push(window.setTimeout(() => {
           setVisible(false);
           onDone();
-        }, 2480));
+        }, 6550));
       }
     };
 
@@ -323,7 +334,7 @@ function CollectionTransfer({ room, completedRooms, canvasRef, finalCompletion, 
   if (!visible) return null;
 
   return (
-    <section className={`collection-transfer ${finalCompletion ? "is-finale" : ""} ${moving ? "is-moving" : ""} ${settled ? "is-settled" : ""} ${gateOpening ? "is-gate-opening" : ""} ${finalScene ? "is-final-scene" : ""} ${finished ? "is-finished" : ""}`} style={{ "--accent": room.color, "--soft": room.soft } as React.CSSProperties} aria-live="polite">
+    <section className={`collection-transfer ${finalCompletion ? "is-finale" : ""} ${moving ? "is-moving" : ""} ${settled ? "is-settled" : ""} ${gateOpening ? "is-gate-opening" : ""} ${finalScene ? "is-final-scene" : ""} ${afterglow ? "is-afterglow" : ""} ${finished ? "is-finished" : ""}`} style={{ "--accent": room.color, "--soft": room.soft } as React.CSSProperties} aria-live="polite">
       <div className="transfer-room-panel">
         <span>ROOM COMPLETE · 퇴장 완료</span>
         <div className="transfer-source-logo" ref={sourceRef}>
@@ -336,10 +347,19 @@ function CollectionTransfer({ room, completedRooms, canvasRef, finalCompletion, 
         <Image className="transfer-poster-base" src="/collection/maze-base.jpg" alt="" width={900} height={900} unoptimized priority />
         {rooms.filter((item) => item.key !== room.key && completedRooms.includes(item.key)).map((item) => <Image key={item.key} style={artifactStyle(item)} className={`journey-artifact artifact-${item.key} collected`} src={item.collectionAsset} alt="" width={item.collectionSize[0]} height={item.collectionSize[1]} />)}
         <Image ref={targetRef} style={artifactStyle(room)} className={`journey-artifact transfer-target artifact-${room.key} collected`} src={room.collectionAsset} alt="" width={room.collectionSize[0]} height={room.collectionSize[1]} />
+        {finalCompletion && <>
+          <Image style={artifactStyle(soundRoom, true)} className="sound-wall-closed sound-wall-closed-left" src="/collection/sound-wall-closed.webp" alt="" width={600} height={600} unoptimized priority />
+          <Image style={artifactStyle(soundRoom, true)} className="sound-wall-closed sound-wall-closed-right" src="/collection/sound-wall-closed.webp" alt="" width={600} height={600} unoptimized priority />
+        </>}
         {finalCompletion && <JourneyFoundPicture transfer />}
       </div>
       <Image ref={flyerRef} className={`transfer-flyer transfer-flyer-${room.key}`} src={room.collectionAsset} alt={`${room.artifactName} 이동 중`} width={room.collectionSize[0]} height={room.collectionSize[1]} priority />
-      <div className="transfer-caption"><span>NEW FIND</span><strong>{room.artifactName}</strong><small>포스터의 빈자리를 채웠어요</small></div>
+      <div className="transfer-caption"><span>NEW FIND · {completedRooms.length}/5</span><strong>{room.artifactName}</strong><small>우리의 포스터에 오래 남을 조각</small></div>
+      <div className="transfer-afterglow">
+        <span>{finalCompletion ? "OUR JOURNEY · FIND IT" : `${completedRooms.length}번째 발견`}</span>
+        <strong>{roomAfterglow[room.key].line}</strong>
+        <small>{finalCompletion ? "“너희가 온 마음으로 나를 구하면 나를 찾을 것이요”" : roomAfterglow[room.key].closing}</small>
+      </div>
       {finalCompletion && <div className="transfer-finale-caption"><span>THE WAY IS OPEN</span><strong>십자가를 찾았어요</strong><small>다섯 조각이 막힌 미로의 길을 열었어요</small></div>}
     </section>
   );

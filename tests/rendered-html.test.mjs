@@ -6,10 +6,11 @@ const root = new URL("../", import.meta.url);
 const read = (path) => readFile(new URL(path, root), "utf8");
 
 test("participant and themed-room experiences are present", async () => {
-  const [home, room, data] = await Promise.all([
+  const [home, room, data, styles] = await Promise.all([
     read("app/page.tsx"),
     read("app/room/[slug]/page.tsx"),
     read("lib/find-data.ts"),
+    read("app/globals.css"),
   ]);
   assert.match(home, /Find<\/span> me/);
   assert.match(home, /FIND <span>IT<\/span>/);
@@ -33,7 +34,14 @@ test("participant and themed-room experiences are present", async () => {
   assert.match(home, /maze-route-segment-\$\{segment\}\.webp/);
   assert.match(home, /JourneyFoundPicture/);
   assert.match(home, /is-gate-opening/);
+  assert.match(home, /is-afterglow/);
+  assert.match(home, /roomAfterglow/);
+  assert.match(home, /오늘 발견한 시선이 다음 사람을 비추기를/);
+  assert.match(home, /duration: 3380/);
   assert.match(home, /십자가를 찾았어요/);
+  assert.match(styles, /\.transfer-afterglow strong,[\s\S]*word-break: keep-all/);
+  assert.match(styles, /env\(safe-area-inset-bottom\)/);
+  assert.match(styles, /@media \(max-width: 700px\) and \(max-height: 620px\)/);
   assert.match(home, /collectingRoom/);
   assert.match(data, /left: 19\.9, top: 60\.3, width: 10, rotate: 38/);
   assert.match(room, /퇴장 QR/);
@@ -44,10 +52,12 @@ test("participant and themed-room experiences are present", async () => {
 });
 
 test("administrator, QR, persistence, and deployment output are present", async () => {
-  const [admin, check, logs, store, vercel] = await Promise.all([
+  const [admin, check, logs, talents, reset, store, vercel] = await Promise.all([
     read("app/jaegunadmin.html/page.tsx"),
     read("app/api/check/route.ts"),
     read("app/api/logs/route.ts"),
+    read("app/api/talents/route.ts"),
+    read("app/api/reset/route.ts"),
     read("lib/find-store.ts"),
     read("vercel.json"),
   ]);
@@ -59,6 +69,10 @@ test("administrator, QR, persistence, and deployment output are present", async 
   assert.match(admin, /조별 활동 로그/);
   assert.match(admin, /CSV 다운로드/);
   assert.match(admin, /downloadHref/);
+  assert.match(admin, /조별 달란트 현황/);
+  assert.match(admin, /\/api\/talents/);
+  assert.match(admin, /TalentEditor/);
+  assert.match(admin, /talentTotal/);
   assert.match(check, /saveTeamState/);
   assert.match(check, /appendActivityLog/);
   assert.match(check, /teamName/);
@@ -68,7 +82,13 @@ test("administrator, QR, persistence, and deployment output are present", async 
   assert.match(logs, /getActivityLogs/);
   assert.match(logs, /text\/csv/);
   assert.match(logs, /Content-Disposition/);
+  assert.match(talents, /getTalentRecords/);
+  assert.match(talents, /saveTalentRecord/);
+  assert.match(talents, /FIND-IT-talents\.csv/);
+  assert.match(talents, /0~999/);
   assert.match(store, /MAX_LOGS/);
+  assert.match(store, /TALENT_KEY/);
+  assert.match(reset, /clearTalentRecords/);
   assert.match(vercel, /"icn1"/);
   await access(new URL(".next/BUILD_ID", root));
   await access(new URL("public/favicon.svg", root));
@@ -79,6 +99,7 @@ test("administrator, QR, persistence, and deployment output are present", async 
   }
   await access(new URL("public/collection/sound-passage.jpg", root));
   await access(new URL("public/collection/sound-piece.webp", root));
+  await access(new URL("public/collection/sound-wall-closed.webp", root));
   await access(new URL("public/collection/body-route.png", root));
   await access(new URL("public/collection/eyes-piece.webp", root));
   await access(new URL("public/collection/heart-piece.webp", root));
@@ -100,8 +121,16 @@ test("in-app camera scans a saved team's QR without another name prompt", async 
   assert.match(home, /href="\/scanner"/);
   assert.match(scanner, /BrowserQRCodeReader/);
   assert.match(scanner, /facingMode/);
+  assert.match(scanner, /DecodeHintType\.TRY_HARDER/);
+  assert.match(scanner, /width: \{ ideal: 1920 \}/);
+  assert.match(scanner, /height: \{ ideal: 1080 \}/);
+  assert.match(scanner, /focusMode: "continuous"/);
+  assert.match(scanner, /switchTorch/);
+  assert.match(scanner, /QR이 사각형의 절반 이상/);
   assert.match(scanner, /\/api\/check/);
   assert.match(scanner, /window\.location\.origin/);
+  assert.doesNotMatch(scanner, /url\.origin !== window\.location\.origin/);
+  assert.match(scanner, /url\.pathname\.replace/);
   assert.match(scan, /localStorage\.getItem\("find-team"\)/);
   assert.doesNotMatch(scan, /입장할 조 이름을 적어 주세요/);
   assert.match(check, /ROOM_FULL/);

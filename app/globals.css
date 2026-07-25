@@ -54,33 +54,48 @@ button { cursor: pointer; }
 .transfer-finale-caption span { color: #f5c242; font: 800 8px var(--font-geist-mono); letter-spacing: .18em; }
 .transfer-finale-caption strong { margin-top: 4px; font: 700 28px var(--font-hand); }
 .transfer-finale-caption small { margin-top: 2px; font-size: 9px; opacity: .78; }
-.collection-transfer.is-moving .transfer-room-panel { animation: transferRoomExit 1.6s .08s cubic-bezier(.65,0,.35,1) forwards; }
-.collection-transfer.is-moving .transfer-source-logo { animation: transferLogoRelease 1.22s cubic-bezier(.2,.82,.2,1) forwards; }
-.collection-transfer.is-moving .transfer-poster { animation: transferPosterEnter 1.75s .08s cubic-bezier(.2,.82,.2,1) forwards; }
-.collection-transfer.is-moving .transfer-caption { animation: transferCaption 1.4s .72s cubic-bezier(.2,.82,.2,1) both; }
-.collection-transfer.is-settled .transfer-target { opacity: 1 !important; animation: transferTargetSettle .42s cubic-bezier(.2,.82,.2,1) both; }
-.collection-transfer.is-gate-opening .transfer-poster .artifact-sound { opacity: 1 !important; animation: gateBreakthrough .82s cubic-bezier(.2,.82,.2,1) both; }
-.collection-transfer.is-gate-opening .transfer-poster .journey-artifact:not(.artifact-sound) { animation: assembledPulse .82s cubic-bezier(.2,.82,.2,1) both; }
+.transfer-afterglow { position: fixed; z-index: 7; inset: 0; padding: 24px; display: grid; place-content: center; justify-items: center; text-align: center; background: rgba(246,240,229,.88); backdrop-filter: blur(2px); opacity: 0; }
+.transfer-afterglow span { color: var(--accent); font: 800 9px var(--font-geist-mono); letter-spacing: .18em; }
+.transfer-afterglow strong { width: min(720px, 90vw); margin-top: 16px; font: 700 clamp(31px,4.2vw,62px)/1.22 var(--font-hand); letter-spacing: -.04em; text-wrap: balance; }
+.transfer-afterglow small { margin-top: 18px; color: #6f6a60; font: 700 clamp(13px,1.5vw,18px)/1.55 var(--font-hand); }
+.collection-transfer.is-finale .transfer-afterglow span { color: var(--poster-blue); }
+.collection-transfer.is-finale .transfer-afterglow strong { color: var(--poster-blue); font-size: clamp(36px,4.8vw,70px); }
+.collection-transfer.is-moving .transfer-room-panel { animation: transferRoomExit 2.75s cubic-bezier(.65,0,.35,1) forwards; }
+.collection-transfer.is-moving .transfer-source-logo { animation: transferLogoRelease 2.35s cubic-bezier(.18,.72,.2,1) forwards; }
+.collection-transfer.is-moving .transfer-poster { animation: transferPosterEnter 3s cubic-bezier(.18,.72,.2,1) forwards; }
+.collection-transfer.is-moving .transfer-caption { animation: transferCaption 2.35s 1.22s cubic-bezier(.18,.72,.2,1) both; }
+.collection-transfer.is-settled .transfer-target { opacity: 1 !important; animation: transferTargetSettle .92s cubic-bezier(.18,.72,.2,1) both; }
+.collection-transfer.is-afterglow .transfer-afterglow { animation: afterglowReveal 1.45s cubic-bezier(.18,.72,.2,1) both; }
+.collection-transfer.is-gate-opening .transfer-poster .artifact-sound { opacity: 1 !important; animation: gateBreakthrough 1.25s cubic-bezier(.2,.82,.2,1) both; }
+.collection-transfer.is-gate-opening .transfer-poster .journey-artifact:not(.artifact-sound) { animation: assembledPulse 1.25s cubic-bezier(.2,.82,.2,1) both; }
 .collection-transfer.is-final-scene .transfer-final-picture { opacity: 1; clip-path: none; }
-.collection-transfer.is-gate-opening.is-final-scene .transfer-poster .journey-artifact.artifact-body { animation: routeSignal .72s cubic-bezier(.2,.82,.2,1) both; }
-.collection-transfer.is-gate-opening.is-final-scene .transfer-poster .journey-artifact.artifact-heart { animation: compassCue .82s .04s cubic-bezier(.2,.82,.2,1) both; }
-.collection-transfer.is-gate-opening.is-final-scene .transfer-poster .journey-artifact.artifact-sound { animation: gateEcho .74s .1s cubic-bezier(.2,.82,.2,1) both; }
-.collection-transfer.is-gate-opening.is-final-scene .transfer-poster .journey-artifact.artifact-eyes { animation: magnifierSearch 2.08s .12s cubic-bezier(.2,.74,.2,1) both; }
-.collection-transfer.is-gate-opening.is-final-scene .transfer-poster .journey-artifact.artifact-grace { animation: crossFound .88s 1.62s cubic-bezier(.2,.82,.2,1) both; }
-.collection-transfer.is-final-scene .route-segment-1 { animation: routeSegmentIn .34s .34s ease-out both; }
-.collection-transfer.is-final-scene .route-segment-2 { animation: routeSegmentIn .34s .65s ease-out both; }
-.collection-transfer.is-final-scene .route-segment-3 { animation: routeSegmentIn .34s .96s ease-out both; }
-.collection-transfer.is-final-scene .route-segment-4 { animation: routeSegmentIn .34s 1.27s ease-out both; }
-.collection-transfer.is-final-scene .route-segment-5 { animation: routeSegmentIn .34s 1.56s ease-out both; }
-.collection-transfer.is-final-scene .transfer-finale-caption { animation: finaleCaption 1.25s 1.5s cubic-bezier(.2,.82,.2,1) both; }
-.collection-transfer.is-finished { animation: transferStageFinish .43s ease forwards; }
-@keyframes transferRoomExit { 55% { opacity: 1; } to { opacity: 0; transform: translateX(-42vw) scale(.94); } }
-@keyframes transferLogoRelease { 40% { transform: rotate(2deg) scale(1.04); } to { opacity: .18; transform: translateX(-18vw) rotate(-8deg) scale(.78); filter: grayscale(.7); } }
-@keyframes transferPosterEnter { 0% { opacity: 0; transform: translateX(68vw) scale(.82) rotate(2deg); } 18% { opacity: 1; } 82% { transform: translateX(-1.5vw) scale(1.02) rotate(-.4deg); } to { opacity: 1; transform: none; box-shadow: none; } }
-@keyframes transferTargetSettle { from { opacity: 0; transform: scale(.88) rotate(var(--part-rotate, 0deg)); } 70% { opacity: 1; transform: scale(1.08) rotate(var(--part-rotate, 0deg)); } to { opacity: 1; transform: scale(1) rotate(var(--part-rotate, 0deg)); } }
-@keyframes transferCaption { 0% { opacity: 0; transform: translateY(20px) rotate(1deg); } 28%, 76% { opacity: 1; transform: translateY(0) rotate(-1deg); } to { opacity: 0; transform: translateY(-8px) rotate(-1deg); } }
+.collection-transfer.is-gate-opening.is-final-scene .transfer-poster .journey-artifact.artifact-body { animation: routeSignal 1.18s cubic-bezier(.2,.82,.2,1) both; }
+.collection-transfer.is-gate-opening.is-final-scene .transfer-poster .journey-artifact.artifact-heart { animation: compassCue 1.3s .08s cubic-bezier(.2,.82,.2,1) both; }
+.collection-transfer.is-gate-opening.is-final-scene .transfer-poster .journey-artifact.artifact-sound { animation: gateEcho 1.2s .15s cubic-bezier(.2,.82,.2,1) both; }
+.collection-transfer.is-gate-opening.is-final-scene .transfer-poster .journey-artifact.artifact-eyes { animation: magnifierSearch 3.45s .2s cubic-bezier(.2,.74,.2,1) both; }
+.collection-transfer.is-gate-opening.is-final-scene .transfer-poster .journey-artifact.artifact-grace { animation: crossFound 1.2s 2.85s cubic-bezier(.2,.82,.2,1) both; }
+.collection-transfer.is-final-scene .route-segment-1 { animation: routeSegmentIn .55s .55s ease-out both; }
+.collection-transfer.is-final-scene .route-segment-2 { animation: routeSegmentIn .55s 1.05s ease-out both; }
+.collection-transfer.is-final-scene .route-segment-3 { animation: routeSegmentIn .55s 1.55s ease-out both; }
+.collection-transfer.is-final-scene .route-segment-4 { animation: routeSegmentIn .55s 2.05s ease-out both; }
+.collection-transfer.is-final-scene .route-segment-5 { animation: routeSegmentIn .55s 2.55s ease-out both; }
+.collection-transfer.is-final-scene .transfer-finale-caption { animation: finaleCaption 1.7s 2.65s cubic-bezier(.2,.82,.2,1) both; }
+.collection-transfer.is-finished { animation: transferStageFinish .82s ease forwards; }
+.sound-wall-closed { position: absolute; z-index: 3; left: var(--part-left); top: var(--part-top); width: var(--part-width); height: auto; object-fit: contain; transform: rotate(var(--part-rotate)); transform-origin: center; }
+.sound-wall-closed-left { clip-path: inset(0 50% 0 0); }
+.sound-wall-closed-right { clip-path: inset(0 0 0 50%); }
+.collection-transfer.is-gate-opening .sound-wall-closed-left { animation: gateOpenLeft 1.25s cubic-bezier(.2,.72,.2,1) both; }
+.collection-transfer.is-gate-opening .sound-wall-closed-right { animation: gateOpenRight 1.25s cubic-bezier(.2,.72,.2,1) both; }
+@keyframes transferRoomExit { 0%,38% { opacity: 1; transform: none; } to { opacity: 0; transform: translateX(-42vw) scale(.94); } }
+@keyframes transferLogoRelease { 0%,28% { transform: rotate(-3deg) scale(1); } 44% { transform: rotate(1deg) scale(1.045); } to { opacity: .16; transform: translateX(-18vw) rotate(-8deg) scale(.78); filter: grayscale(.72); } }
+@keyframes transferPosterEnter { 0% { opacity: 0; transform: translateX(68vw) scale(.82) rotate(2deg); } 22% { opacity: 1; } 86% { transform: translateX(-1vw) scale(1.012) rotate(-.25deg); } to { opacity: 1; transform: none; box-shadow: none; } }
+@keyframes transferTargetSettle { from { opacity: 0; transform: scale(.9) rotate(var(--part-rotate, 0deg)); filter: saturate(.78); } 62% { opacity: 1; transform: scale(1.055) rotate(var(--part-rotate, 0deg)); filter: saturate(1.2); } to { opacity: 1; transform: scale(1) rotate(var(--part-rotate, 0deg)); filter: saturate(1.05); } }
+@keyframes transferCaption { 0% { opacity: 0; transform: translateY(22px) rotate(1deg); } 24%,72% { opacity: 1; transform: translateY(0) rotate(-1deg); } to { opacity: 0; transform: translateY(-10px) rotate(-1deg); } }
+@keyframes afterglowReveal { from { opacity: 0; } to { opacity: 1; } }
 @keyframes transferStageFinish { to { opacity: 0; background: transparent; } }
 @keyframes gateBreakthrough { 0% { left: var(--part-left); top: var(--part-top); width: var(--part-width); transform: scale(.82) rotate(var(--part-rotate)); filter: saturate(.75); } 38% { left: 24%; top: 64%; width: 9%; transform: scale(1.18) rotate(calc(var(--gate-rotate) - 5deg)); filter: saturate(1.35) drop-shadow(0 0 10px rgba(233,84,47,.48)); } 72% { transform: scale(.94) rotate(calc(var(--gate-rotate) + 2deg)); } 100% { left: var(--gate-left); top: var(--gate-top); width: var(--gate-width); transform: scale(1) rotate(var(--gate-rotate)); filter: saturate(1.08); } }
+@keyframes gateOpenLeft { 0%,18% { opacity: 1; transform: rotate(var(--part-rotate)); } 72% { opacity: 1; transform: translate(-19%,-9%) rotate(calc(var(--part-rotate) - 8deg)); } to { opacity: 0; transform: translate(-27%,-14%) rotate(calc(var(--part-rotate) - 12deg)); } }
+@keyframes gateOpenRight { 0%,18% { opacity: 1; transform: rotate(var(--part-rotate)); } 72% { opacity: 1; transform: translate(19%,9%) rotate(calc(var(--part-rotate) + 8deg)); } to { opacity: 0; transform: translate(27%,14%) rotate(calc(var(--part-rotate) + 12deg)); } }
 @keyframes assembledPulse { 50% { transform: scale(1.06) rotate(var(--part-rotate,0deg)); filter: saturate(1.25) drop-shadow(0 0 7px rgba(232,169,19,.28)); } }
 @keyframes finalRouteReveal { from { opacity: 0; clip-path: circle(0 at 28% 65%); } to { opacity: 1; clip-path: circle(125% at 28% 65%); } }
 @keyframes routeSignal { 0%,100% { transform: scale(1); filter: saturate(1.05); } 45% { transform: scale(1.09) translate(2%,-2%); filter: saturate(1.55) drop-shadow(0 0 7px rgba(233,84,47,.42)); } }
@@ -225,7 +240,9 @@ footer b { margin-left: auto; color: #1d9a6c; }
 .camera-frame > span { position: absolute; inset: 0; display: grid; place-items: center; color: #62d29f; font-size: 75px; font-weight: 900; }
 .camera-guide p { width: min(90vw, 430px); margin: 30px 0 0; text-align: center; color: rgba(255,255,255,.72); font-size: 12px; line-height: 1.55; }
 .camera-guide p b { display: block; margin-bottom: 6px; color: white; font-size: 19px; }
-.camera-guide button { margin-top: 18px; padding: 12px 18px; pointer-events: auto; border: 0; border-radius: 3px; color: #171713; background: white; font-size: 12px; font-weight: 800; }
+.camera-actions { min-height: 48px; margin-top: 18px; display: flex; justify-content: center; gap: 8px; }
+.camera-guide button { padding: 12px 18px; pointer-events: auto; border: 1px solid rgba(255,255,255,.35); border-radius: 99px; color: #171713; background: white; font-size: 12px; font-weight: 800; }
+.camera-guide button[aria-pressed="true"] { color: white; background: rgba(23,23,19,.72); backdrop-filter: blur(8px); }
 .camera-processing .camera-frame::after, .camera-success .camera-frame::after, .camera-error .camera-frame::after { display: none; }
 .camera-processing .camera-frame > i { border-color: #62d29f; }
 .camera-success .camera-frame > i { border-color: #62d29f; animation: frameSuccess .6s cubic-bezier(.2,.8,.2,1) both; }
@@ -394,6 +411,44 @@ footer b { margin-left: auto; color: #1d9a6c; }
 .log-empty strong { color: var(--ink); font-size: 14px; }
 .log-empty p { margin: 8px 0 0; font-size: 11px; }
 
+/* Talent ledger */
+.talent-summary { display: grid; grid-template-columns: repeat(4, 1fr); margin-bottom: 14px; border: 1px solid var(--line); background: white; }
+.talent-summary > div { min-height: 92px; padding: 18px 21px; display: grid; align-content: center; border-right: 1px solid var(--line); }
+.talent-summary > div:last-child { border: 0; }
+.talent-summary span { color: #858177; font-size: 9px; font-weight: 700; letter-spacing: .06em; }
+.talent-summary strong { margin-top: 7px; font: 750 24px var(--font-geist-mono); }
+.talent-summary strong small { margin-left: 5px; color: #858177; font: 650 9px var(--font-geist-sans); }
+.talent-summary > div:last-child > small { margin-top: 3px; color: #f05335; font-size: 9px; font-weight: 750; }
+.talent-note { margin-bottom: 14px; padding: 13px 16px; display: flex; justify-content: space-between; gap: 16px; color: #6f6c64; background: #fff6dc; border: 1px solid #ead9a4; font-size: 10px; }
+.talent-note b { color: #6a4a04; }
+.talent-ledger { overflow-x: auto; border: 1px solid var(--line); background: white; }
+.talent-ledger-inner { min-width: 850px; }
+.talent-ledger-head, .talent-row { display: grid; grid-template-columns: minmax(135px,1.2fr) repeat(5,minmax(70px,1fr)) 72px 78px; align-items: stretch; }
+.talent-ledger-head { min-height: 48px; color: #858177; background: #f1f0eb; border-bottom: 1px solid var(--line); font-size: 9px; font-weight: 750; }
+.talent-ledger-head > span { padding: 0 13px; display: flex; align-items: center; justify-content: center; gap: 6px; border-right: 1px solid rgba(23,23,19,.08); }
+.talent-ledger-head > span:first-child { justify-content: flex-start; }
+.talent-ledger-head i { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+.talent-row { min-height: 82px; border-bottom: 1px solid rgba(23,23,19,.1); transition: background .18s; }
+.talent-row:last-child { border-bottom: 0; }
+.talent-row:hover { background: #fdfcf8; }
+.talent-team { padding: 15px 13px; display: grid; align-content: center; border-right: 1px solid rgba(23,23,19,.08); }
+.talent-team strong { font-size: 13px; }
+.talent-team small { margin-top: 5px; color: #98958c; font: 600 8px var(--font-geist-mono); }
+.talent-room-field { padding: 11px 10px; display: grid; align-content: center; gap: 5px; border-right: 1px solid rgba(23,23,19,.08); }
+.talent-room-field span { display: none; color: var(--accent); font-size: 8px; font-weight: 800; }
+.talent-room-field input { width: 100%; height: 39px; padding: 0 8px; border: 1px solid #d5d2c9; border-radius: 3px; outline: 0; color: var(--ink); background: white; text-align: center; font: 750 15px var(--font-geist-mono); transition: border-color .18s, box-shadow .18s; }
+.talent-room-field input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent); }
+.talent-total { display: grid; place-content: center; text-align: center; color: #f05335; font: 800 19px var(--font-geist-mono); border-right: 1px solid rgba(23,23,19,.08); }
+.talent-total small { margin-top: 2px; color: #918e85; font: 650 8px var(--font-geist-sans); }
+.talent-save { align-self: center; height: 38px; margin: 0 7px; border: 0; border-radius: 3px; color: white; background: #1b1b18; font-size: 9px; font-weight: 800; transition: background .18s, transform .18s; }
+.talent-save:hover { transform: translateY(-1px); background: #f05335; }
+.talent-save:disabled { opacity: .55; }
+.talent-save.saved { background: #1d9a6c; }
+.talent-save.error { background: #c93426; }
+.talent-empty { padding: 72px 24px; text-align: center; color: #858177; }
+.talent-empty strong { color: var(--ink); font-size: 14px; }
+.talent-empty p { margin: 8px 0 0; font-size: 11px; }
+
 @media (max-width: 1050px) {
   .hero { grid-template-columns: 1fr; }
   .hero-copy { max-width: 680px; }
@@ -416,12 +471,25 @@ footer b { margin-left: auto; color: #1d9a6c; }
   .journey-board-heading { min-height: 46px; }
   .artifact-legend b { font-size: 7px; }
   .artifact-legend img { width: 31px; height: 31px; }
-  .transfer-source-logo { width: min(58vw, 240px); }
-  .transfer-room-panel h2 { font-size: 38px; }
-  .transfer-caption { right: 18px; bottom: 24px; min-width: 165px; padding: 11px 14px; }
-  .transfer-caption strong { font-size: 21px; }
-  .transfer-finale-caption { bottom: 24px; padding: 12px 16px; }
-  .transfer-finale-caption strong { font-size: 23px; }
+  .collection-transfer { width: 100vw; height: 100svh; min-height: 100svh; }
+  .transfer-room-panel { min-height: 100svh; padding: max(18px, env(safe-area-inset-top)) 20px max(18px, env(safe-area-inset-bottom)); align-content: center; }
+  .transfer-room-panel > span { max-width: 88vw; font-size: 8px; line-height: 1.45; }
+  .transfer-source-logo { width: min(54vw, 210px); max-height: 30svh; margin-top: 12px; }
+  .transfer-room-panel h2 { max-width: 88vw; margin-top: 10px; font-size: clamp(32px, 10vw, 40px); line-height: 1.08; word-break: keep-all; }
+  .transfer-room-panel p { max-width: 82vw; font-size: 11px; line-height: 1.55; word-break: keep-all; }
+  .transfer-caption { left: 16px; right: 16px; bottom: max(18px, env(safe-area-inset-bottom)); width: auto; min-width: 0; max-width: none; padding: 11px 14px; }
+  .transfer-caption span { font-size: 7px; line-height: 1.4; }
+  .transfer-caption strong { font-size: 22px; line-height: 1.15; word-break: keep-all; }
+  .transfer-caption small { margin-top: 2px; line-height: 1.45; word-break: keep-all; }
+  .transfer-finale-caption { left: 16px; right: 16px; bottom: max(18px, env(safe-area-inset-bottom)); width: auto; min-width: 0; padding: 12px 15px; transform: translateY(24px) rotate(-1deg); }
+  .transfer-finale-caption strong { font-size: 24px; line-height: 1.18; word-break: keep-all; }
+  .transfer-finale-caption small { line-height: 1.45; word-break: keep-all; }
+  .transfer-afterglow { min-height: 100svh; padding: max(28px, env(safe-area-inset-top)) 22px max(28px, env(safe-area-inset-bottom)); align-content: center; }
+  .transfer-afterglow span { max-width: 100%; font-size: 7px; line-height: 1.5; letter-spacing: .14em; word-break: keep-all; }
+  .transfer-afterglow strong,
+  .collection-transfer.is-finale .transfer-afterglow strong { width: min(330px, 100%); margin-top: 13px; font-size: clamp(26px, 8.1vw, 34px); line-height: 1.3; letter-spacing: -.035em; word-break: keep-all; overflow-wrap: normal; text-wrap: balance; }
+  .transfer-afterglow small { width: min(310px, 100%); margin-top: 14px; font-size: clamp(12px, 3.7vw, 15px); line-height: 1.55; word-break: keep-all; overflow-wrap: normal; text-wrap: balance; }
+  @keyframes finaleCaption { 0% { opacity: 0; transform: translateY(24px) rotate(-1deg); } 22%, 82% { opacity: 1; transform: translateY(0) rotate(-1deg); } to { opacity: 0; transform: translateY(-10px) rotate(-1deg); } }
   .scribble-line { margin-bottom: 18px; }
   .team-picker span { width: 66px; }
   .team-picker input { font-size: 15px; }
@@ -442,11 +510,12 @@ footer b { margin-left: auto; color: #1d9a6c; }
   .scan-panel { padding: 42px 24px 35px; justify-content: flex-start; }
   .scan-action { margin-top: 28px; }
   .scan-panel h1 { font-size: 51px; }
-  .scan-panel > p { margin-bottom: 32px; font-size: 13px; }
+  .scan-panel > p { margin-bottom: 32px; font-size: 13px; line-height: 1.5; word-break: keep-all; }
+  .scan-processing strong, .camera-guide p, .exit-logo-handoff small { word-break: keep-all; }
   .experience { padding: 0 24px 35px; }
   .experience-copy { padding-top: 10vh; }
-  .experience-copy h1 { font-size: 66px; }
-  .experience-copy > p { font-size: 16px; }
+  .experience-copy h1 { max-width: calc(100vw - 48px); font-size: clamp(48px, 17vw, 66px); line-height: .94; word-break: keep-all; }
+  .experience-copy > p { max-width: calc(100vw - 48px); font-size: 16px; line-height: 1.55; word-break: keep-all; }
   .experience-mark { width: 310px; right: -70px; top: 95px; }
   .room-header-actions { gap: 10px; }
   .experience-bottom { left: 24px; right: 24px; bottom: 60px; grid-template-columns: 1fr; gap: 20px; }
@@ -456,8 +525,8 @@ footer b { margin-left: auto; color: #1d9a6c; }
   .admin-shell { display: block; }
   .admin-shell aside { position: static; height: auto; padding: 20px 22px; flex-direction: row; align-items: center; gap: 15px; }
   .admin-title, .back-home { display: none; }
-  .admin-shell nav { margin-left: auto; display: flex; }
-  .admin-shell nav button { padding: 9px 10px; }
+  .admin-shell nav { margin-left: auto; display: flex; overflow-x: auto; }
+  .admin-shell nav button { flex: 0 0 auto; padding: 9px 10px; white-space: nowrap; }
   .admin-shell nav button span { display: none; }
   .admin-main { padding: 0 18px 60px; }
   .admin-heading { margin-top: 38px; }
@@ -469,12 +538,28 @@ footer b { margin-left: auto; color: #1d9a6c; }
   .qr-grid article { padding: 15px; }
   .log-toolbar { grid-template-columns: 1fr auto; }
   .log-toolbar > a { grid-column: 1 / -1; }
+  .talent-summary { grid-template-columns: repeat(2,1fr); }
+  .talent-summary > div:nth-child(2) { border-right: 0; }
+  .talent-summary > div:nth-child(-n+2) { border-bottom: 1px solid var(--line); }
+  .talent-note { display: grid; }
   .activity-log-list::before { left: 20px; }
   .activity-log-list article { grid-template-columns: 1fr auto; gap: 7px 12px; padding: 15px 15px 15px 38px; }
   .activity-log-list time { grid-column: 1; }
   .log-action { position: absolute; left: 11px; top: 16px; width: 18px; height: 18px; overflow: hidden; color: transparent; }
   .activity-log-list article > div { grid-column: 1; }
   .activity-log-list article > b { grid-column: 2; grid-row: 1 / 3; text-align: right; }
+}
+
+@media (max-width: 700px) and (max-height: 620px) {
+  .transfer-room-panel { padding-top: 12px; padding-bottom: 12px; }
+  .transfer-source-logo { width: min(31svh, 170px); margin-top: 7px; border-width: 3px; }
+  .transfer-room-panel h2 { margin-top: 7px; font-size: clamp(28px, 8vw, 34px); }
+  .transfer-room-panel p { font-size: 10px; }
+  .transfer-afterglow { padding-top: 18px; padding-bottom: 18px; }
+  .transfer-afterglow strong,
+  .collection-transfer.is-finale .transfer-afterglow strong { margin-top: 9px; font-size: clamp(24px, 7vw, 29px); line-height: 1.24; }
+  .transfer-afterglow small { margin-top: 9px; font-size: 12px; line-height: 1.42; }
+  .transfer-caption, .transfer-finale-caption { bottom: max(10px, env(safe-area-inset-bottom)); }
 }
 
 @media (prefers-reduced-motion: reduce) {

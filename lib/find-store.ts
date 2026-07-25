@@ -1,8 +1,9 @@
 import { getCache } from "@vercel/functions";
-import type { ActivityLog, TeamState } from "./find-data";
+import type { ActivityLog, TalentRecord, TeamState } from "./find-data";
 
 const STATE_KEY = "live-team-states";
 const LOG_KEY = "activity-logs";
+const TALENT_KEY = "talent-records";
 const ONE_WEEK = 60 * 60 * 24 * 7;
 const MAX_LOGS = 3000;
 
@@ -42,4 +43,20 @@ export async function appendActivityLog(next: ActivityLog) {
 
 export async function clearActivityLogs() {
   await getFindCache().delete(LOG_KEY);
+}
+
+export async function getTalentRecords(): Promise<TalentRecord[]> {
+  const value = await getFindCache().get(TALENT_KEY);
+  return Array.isArray(value) ? value as TalentRecord[] : [];
+}
+
+export async function saveTalentRecord(next: TalentRecord) {
+  const records = await getTalentRecords();
+  const updated = [next, ...records.filter((record) => record.teamId !== next.teamId)];
+  await getFindCache().set(TALENT_KEY, updated, { ttl: ONE_WEEK, tags: ["find-us-talents"], name: "FIND IT talent records" });
+  return updated;
+}
+
+export async function clearTalentRecords() {
+  await getFindCache().delete(TALENT_KEY);
 }

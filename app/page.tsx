@@ -9,18 +9,19 @@ import { elapsedRoomLabel, rooms, teamKey, type RoomKey, type TeamState } from "
 type FindRoom = (typeof rooms)[number];
 const routeSegments = [1, 2, 3, 4, 5] as const;
 const soundRoom = rooms.find((room) => room.key === "sound")!;
-const roomAfterglow: Record<RoomKey, { line: string; closing: string }> = {
-  eyes: { line: "서로를 바라볼 때, 보이지 않던 길이 보였어요.", closing: "오늘 발견한 시선이 다음 사람을 비추기를" },
-  sound: { line: "서로의 목소리를 들을 때, 막혀 있던 길이 열렸어요.", closing: "오늘 들은 마음을 오래 기억하기를" },
-  body: { line: "함께 움직인 걸음이, 하나의 길이 되었어요.", closing: "오늘 맞춘 걸음이 다음 길에도 이어지기를" },
-  heart: { line: "마음을 모을 때, 우리는 길을 잃지 않았어요.", closing: "오늘 나눈 마음이 서로의 나침반이 되기를" },
-  grace: { line: "마침내 찾은 것은, 우리를 기다리고 있던 은혜였어요.", closing: "찾는 모든 순간에도 이미 함께하셨음을" },
+const eyesRoom = rooms.find((room) => room.key === "eyes")!;
+const roomAfterglow: Record<RoomKey, { line: string; reference: string }> = {
+  eyes: { line: "내 눈을 열어서 주의 율법에서 놀라운 것을 보게 하소서", reference: "시편 119:18" },
+  sound: { line: "귀 있는 자는 성령이 교회들에게 하시는 말씀을 들을지어다", reference: "요한계시록 2:7" },
+  body: { line: "너희는 그리스도의 몸이요 지체의 각 부분이라", reference: "고린도전서 12:27" },
+  heart: { line: "너는 마음을 다하여 여호와를 신뢰하고", reference: "잠언 3:5" },
+  grace: { line: "나의 은혜가 네게 족하도다", reference: "고린도후서 12:9" },
 };
 
 const artifactStyle = (room: FindRoom, assembled = false) => ({
-  "--part-left": `${room.key === "sound" && !assembled ? 20.5 : room.collectionPosition.left}%`,
-  "--part-top": `${room.key === "sound" && !assembled ? 65.5 : room.collectionPosition.top}%`,
-  "--part-width": `${room.key === "sound" && !assembled ? 8 : room.collectionPosition.width}%`,
+  "--part-left": `${room.key === "sound" && !assembled ? 18.5 : room.collectionPosition.left}%`,
+  "--part-top": `${room.key === "sound" && !assembled ? 63.2 : room.collectionPosition.top}%`,
+  "--part-width": `${room.key === "sound" && !assembled ? 12.5 : room.collectionPosition.width}%`,
   "--part-rotate": `${room.key === "sound" && !assembled ? 52 : room.collectionPosition.rotate}deg`,
   "--gate-left": `${room.collectionPosition.left}%`,
   "--gate-top": `${room.collectionPosition.top}%`,
@@ -232,6 +233,8 @@ function CollectionTransfer({ room, completedRooms, canvasRef, finalCompletion, 
   const [settled, setSettled] = useState(false);
   const [gateOpening, setGateOpening] = useState(false);
   const [finalScene, setFinalScene] = useState(false);
+  const [routeSearching, setRouteSearching] = useState(false);
+  const [routeComplete, setRouteComplete] = useState(false);
   const [afterglow, setAfterglow] = useState(false);
   const [finished, setFinished] = useState(false);
   const [visible, setVisible] = useState(true);
@@ -287,6 +290,8 @@ function CollectionTransfer({ room, completedRooms, canvasRef, finalCompletion, 
         if (finalCompletion) {
           setGateOpening(true);
           setFinalScene(true);
+          setRouteSearching(true);
+          setRouteComplete(true);
         }
         timers.push(window.setTimeout(() => {
           setVisible(false);
@@ -306,14 +311,18 @@ function CollectionTransfer({ room, completedRooms, canvasRef, finalCompletion, 
 
       timers.push(window.setTimeout(() => setSettled(true), 3600));
       if (finalCompletion) {
-        timers.push(window.setTimeout(() => setGateOpening(true), 4650));
-        timers.push(window.setTimeout(() => setFinalScene(true), 5950));
-        timers.push(window.setTimeout(() => setAfterglow(true), 9100));
-        timers.push(window.setTimeout(() => setFinished(true), 11150));
+        timers.push(window.setTimeout(() => setGateOpening(true), 4800));
+        timers.push(window.setTimeout(() => {
+          setFinalScene(true);
+          setRouteSearching(true);
+        }, 7100));
+        timers.push(window.setTimeout(() => setRouteComplete(true), 13700));
+        timers.push(window.setTimeout(() => setAfterglow(true), 15200));
+        timers.push(window.setTimeout(() => setFinished(true), 20500));
         timers.push(window.setTimeout(() => {
           setVisible(false);
           onDone();
-        }, 12000));
+        }, 21500));
       } else {
         timers.push(window.setTimeout(() => setAfterglow(true), 4050));
         timers.push(window.setTimeout(() => setFinished(true), 5850));
@@ -334,7 +343,7 @@ function CollectionTransfer({ room, completedRooms, canvasRef, finalCompletion, 
   if (!visible) return null;
 
   return (
-    <section className={`collection-transfer ${finalCompletion ? "is-finale" : ""} ${moving ? "is-moving" : ""} ${settled ? "is-settled" : ""} ${gateOpening ? "is-gate-opening" : ""} ${finalScene ? "is-final-scene" : ""} ${afterglow ? "is-afterglow" : ""} ${finished ? "is-finished" : ""}`} style={{ "--accent": room.color, "--soft": room.soft } as React.CSSProperties} aria-live="polite">
+    <section className={`collection-transfer ${finalCompletion ? "is-finale" : ""} ${moving ? "is-moving" : ""} ${settled ? "is-settled" : ""} ${gateOpening ? "is-gate-opening" : ""} ${finalScene ? "is-final-scene" : ""} ${routeSearching ? "is-route-searching" : ""} ${routeComplete ? "is-route-complete" : ""} ${afterglow ? "is-afterglow" : ""} ${finished ? "is-finished" : ""}`} style={{ "--accent": room.color, "--soft": room.soft } as React.CSSProperties} aria-live="polite">
       <div className="transfer-room-panel">
         <span>ROOM COMPLETE · 퇴장 완료</span>
         <div className="transfer-source-logo" ref={sourceRef}>
@@ -345,22 +354,23 @@ function CollectionTransfer({ room, completedRooms, canvasRef, finalCompletion, 
       </div>
       <div className="transfer-poster" ref={posterRef} aria-label={`${room.artifactName}이 포스터의 정확한 위치로 이동 중`}>
         <Image className="transfer-poster-base" src="/collection/maze-base.jpg" alt="" width={900} height={900} unoptimized priority />
-        {rooms.filter((item) => item.key !== room.key && completedRooms.includes(item.key)).map((item) => <Image key={item.key} style={artifactStyle(item)} className={`journey-artifact artifact-${item.key} collected`} src={item.collectionAsset} alt="" width={item.collectionSize[0]} height={item.collectionSize[1]} />)}
-        <Image ref={targetRef} style={artifactStyle(room)} className={`journey-artifact transfer-target artifact-${room.key} collected`} src={room.collectionAsset} alt="" width={room.collectionSize[0]} height={room.collectionSize[1]} />
+        {rooms.filter((item) => item.key !== room.key && completedRooms.includes(item.key)).map((item) => <Image key={item.key} style={artifactStyle(item, finalCompletion && item.key === "sound")} className={`journey-artifact artifact-${item.key} collected`} src={item.collectionAsset} alt="" width={item.collectionSize[0]} height={item.collectionSize[1]} />)}
+        <Image ref={targetRef} style={artifactStyle(room, finalCompletion && room.key === "sound")} className={`journey-artifact transfer-target artifact-${room.key} collected`} src={room.collectionAsset} alt="" width={room.collectionSize[0]} height={room.collectionSize[1]} />
         {finalCompletion && <>
           <Image style={artifactStyle(soundRoom, true)} className="sound-wall-closed sound-wall-closed-left" src="/collection/sound-wall-closed.webp" alt="" width={600} height={600} unoptimized priority />
           <Image style={artifactStyle(soundRoom, true)} className="sound-wall-closed sound-wall-closed-right" src="/collection/sound-wall-closed.webp" alt="" width={600} height={600} unoptimized priority />
         </>}
         {finalCompletion && <JourneyFoundPicture transfer />}
+        {finalCompletion && <Image className="route-magnifier" src={eyesRoom.collectionAsset} alt="붉은 점선 길을 따라 십자가를 찾는 돋보기" width={600} height={600} unoptimized priority />}
       </div>
       <Image ref={flyerRef} className={`transfer-flyer transfer-flyer-${room.key}`} src={room.collectionAsset} alt={`${room.artifactName} 이동 중`} width={room.collectionSize[0]} height={room.collectionSize[1]} priority />
-      <div className="transfer-caption"><span>NEW FIND · {completedRooms.length}/5</span><strong>{room.artifactName}</strong><small>우리의 포스터에 오래 남을 조각</small></div>
+      <div className="transfer-caption"><span>NEW FIND · {completedRooms.length}/5</span><strong>{room.artifactName}</strong><small>여정 속에서 발견한 한 조각</small></div>
       <div className="transfer-afterglow">
         <span>{finalCompletion ? "OUR JOURNEY · FIND IT" : `${completedRooms.length}번째 발견`}</span>
-        <strong>{roomAfterglow[room.key].line}</strong>
-        <small>{finalCompletion ? "“너희가 온 마음으로 나를 구하면 나를 찾을 것이요”" : roomAfterglow[room.key].closing}</small>
+        <strong>{finalCompletion ? "너희가 온 마음으로 나를 구하면 나를 찾을 것이요 나를 만나리라" : roomAfterglow[room.key].line}</strong>
+        <small>{finalCompletion ? "예레미야 29:13" : roomAfterglow[room.key].reference}</small>
       </div>
-      {finalCompletion && <div className="transfer-finale-caption"><span>THE WAY IS OPEN</span><strong>십자가를 찾았어요</strong><small>다섯 조각이 막힌 미로의 길을 열었어요</small></div>}
+      {finalCompletion && <div className="transfer-finale-caption"><span>THE WAY IS OPEN</span><strong>길 끝에서 십자가를 만났어요</strong><small>“찾으라 그리하면 찾아낼 것이요” · 마태복음 7:7</small></div>}
     </section>
   );
 }

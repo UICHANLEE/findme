@@ -66,26 +66,25 @@ button { cursor: pointer; }
 .collection-transfer.is-moving .transfer-caption { animation: transferCaption 2.35s 1.22s cubic-bezier(.18,.72,.2,1) both; }
 .collection-transfer.is-settled .transfer-target { opacity: 1 !important; animation: transferTargetSettle .92s cubic-bezier(.18,.72,.2,1) both; }
 .collection-transfer.is-afterglow .transfer-afterglow { animation: afterglowReveal 1.45s cubic-bezier(.18,.72,.2,1) both; }
-.collection-transfer.is-gate-opening .transfer-poster .artifact-sound { opacity: 1 !important; animation: gateBreakthrough 1.25s cubic-bezier(.2,.82,.2,1) both; }
-.collection-transfer.is-gate-opening .transfer-poster .journey-artifact:not(.artifact-sound) { animation: assembledPulse 1.25s cubic-bezier(.2,.82,.2,1) both; }
+.collection-transfer.is-gate-opening .transfer-poster .artifact-sound { opacity: 1 !important; animation: gateReady 2.2s cubic-bezier(.2,.82,.2,1) both; }
+.collection-transfer.is-gate-opening .transfer-poster .journey-artifact:not(.artifact-sound) { animation: assembledPulse 2.2s cubic-bezier(.2,.82,.2,1) both; }
 .collection-transfer.is-final-scene .transfer-final-picture { opacity: 1; clip-path: none; }
-.collection-transfer.is-gate-opening.is-final-scene .transfer-poster .journey-artifact.artifact-body { animation: routeSignal 1.18s cubic-bezier(.2,.82,.2,1) both; }
-.collection-transfer.is-gate-opening.is-final-scene .transfer-poster .journey-artifact.artifact-heart { animation: compassCue 1.3s .08s cubic-bezier(.2,.82,.2,1) both; }
-.collection-transfer.is-gate-opening.is-final-scene .transfer-poster .journey-artifact.artifact-sound { animation: gateEcho 1.2s .15s cubic-bezier(.2,.82,.2,1) both; }
-.collection-transfer.is-gate-opening.is-final-scene .transfer-poster .journey-artifact.artifact-eyes { animation: magnifierSearch 3.45s .2s cubic-bezier(.2,.74,.2,1) both; }
-.collection-transfer.is-gate-opening.is-final-scene .transfer-poster .journey-artifact.artifact-grace { animation: crossFound 1.2s 2.85s cubic-bezier(.2,.82,.2,1) both; }
-.collection-transfer.is-final-scene .route-segment-1 { animation: routeSegmentIn .55s .55s ease-out both; }
-.collection-transfer.is-final-scene .route-segment-2 { animation: routeSegmentIn .55s 1.05s ease-out both; }
-.collection-transfer.is-final-scene .route-segment-3 { animation: routeSegmentIn .55s 1.55s ease-out both; }
-.collection-transfer.is-final-scene .route-segment-4 { animation: routeSegmentIn .55s 2.05s ease-out both; }
-.collection-transfer.is-final-scene .route-segment-5 { animation: routeSegmentIn .55s 2.55s ease-out both; }
-.collection-transfer.is-final-scene .transfer-finale-caption { animation: finaleCaption 1.7s 2.65s cubic-bezier(.2,.82,.2,1) both; }
+.collection-transfer.is-route-searching .transfer-poster .journey-artifact.artifact-eyes { opacity: .28 !important; transition: opacity 1.1s ease; }
+.collection-transfer.is-route-searching .route-magnifier { animation: magnifierFollowRoute 6.6s linear both; }
+.collection-transfer.is-route-searching .route-segment-1 { animation: routeSegmentIn 1.3s .1s ease-out both; }
+.collection-transfer.is-route-searching .route-segment-2 { animation: routeSegmentIn 1.3s 1.25s ease-out both; }
+.collection-transfer.is-route-searching .route-segment-3 { animation: routeSegmentIn 1.3s 2.4s ease-out both; }
+.collection-transfer.is-route-searching .route-segment-4 { animation: routeSegmentIn 1.3s 3.55s ease-out both; }
+.collection-transfer.is-route-searching .route-segment-5 { animation: routeSegmentIn 1.3s 4.7s ease-out both; }
+.collection-transfer.is-route-complete .transfer-poster .journey-artifact.artifact-grace { animation: crossFound 1.45s cubic-bezier(.2,.82,.2,1) both; }
+.collection-transfer.is-route-complete .route-magnifier { opacity: 0; transition: opacity 1.15s ease; }
+.collection-transfer.is-route-complete .transfer-finale-caption { animation: finaleCaption 2.4s .25s cubic-bezier(.2,.82,.2,1) both; }
 .collection-transfer.is-finished { animation: transferStageFinish .82s ease forwards; }
-.sound-wall-closed { position: absolute; z-index: 3; left: var(--part-left); top: var(--part-top); width: var(--part-width); height: auto; object-fit: contain; transform: rotate(var(--part-rotate)); transform-origin: center; }
-.sound-wall-closed-left { clip-path: inset(0 50% 0 0); }
-.sound-wall-closed-right { clip-path: inset(0 0 0 50%); }
-.collection-transfer.is-gate-opening .sound-wall-closed-left { animation: gateOpenLeft 1.25s cubic-bezier(.2,.72,.2,1) both; }
-.collection-transfer.is-gate-opening .sound-wall-closed-right { animation: gateOpenRight 1.25s cubic-bezier(.2,.72,.2,1) both; }
+.sound-wall-closed { position: absolute; z-index: 3; left: var(--part-left); top: var(--part-top); width: var(--part-width); height: auto; object-fit: contain; transform: rotate(var(--part-rotate)); }
+.sound-wall-closed-left { clip-path: inset(0 50% 0 0); transform-origin: 0 50%; }
+.sound-wall-closed-right { clip-path: inset(0 0 0 50%); transform-origin: 100% 50%; }
+.collection-transfer.is-gate-opening .sound-wall-closed-left { animation: gateRetractLeft 2.2s cubic-bezier(.32,.02,.18,1) both; }
+.collection-transfer.is-gate-opening .sound-wall-closed-right { animation: gateRetractRight 2.2s cubic-bezier(.32,.02,.18,1) both; }
 @keyframes transferRoomExit { 0%,38% { opacity: 1; transform: none; } to { opacity: 0; transform: translateX(-42vw) scale(.94); } }
 @keyframes transferLogoRelease { 0%,28% { transform: rotate(-3deg) scale(1); } 44% { transform: rotate(1deg) scale(1.045); } to { opacity: .16; transform: translateX(-18vw) rotate(-8deg) scale(.78); filter: grayscale(.72); } }
 @keyframes transferPosterEnter { 0% { opacity: 0; transform: translateX(68vw) scale(.82) rotate(2deg); } 22% { opacity: 1; } 86% { transform: translateX(-1vw) scale(1.012) rotate(-.25deg); } to { opacity: 1; transform: none; box-shadow: none; } }
@@ -93,15 +92,23 @@ button { cursor: pointer; }
 @keyframes transferCaption { 0% { opacity: 0; transform: translateY(22px) rotate(1deg); } 24%,72% { opacity: 1; transform: translateY(0) rotate(-1deg); } to { opacity: 0; transform: translateY(-10px) rotate(-1deg); } }
 @keyframes afterglowReveal { from { opacity: 0; } to { opacity: 1; } }
 @keyframes transferStageFinish { to { opacity: 0; background: transparent; } }
-@keyframes gateBreakthrough { 0% { left: var(--part-left); top: var(--part-top); width: var(--part-width); transform: scale(.82) rotate(var(--part-rotate)); filter: saturate(.75); } 38% { left: 24%; top: 64%; width: 9%; transform: scale(1.18) rotate(calc(var(--gate-rotate) - 5deg)); filter: saturate(1.35) drop-shadow(0 0 10px rgba(233,84,47,.48)); } 72% { transform: scale(.94) rotate(calc(var(--gate-rotate) + 2deg)); } 100% { left: var(--gate-left); top: var(--gate-top); width: var(--gate-width); transform: scale(1) rotate(var(--gate-rotate)); filter: saturate(1.08); } }
-@keyframes gateOpenLeft { 0%,18% { opacity: 1; transform: rotate(var(--part-rotate)); } 72% { opacity: 1; transform: translate(-19%,-9%) rotate(calc(var(--part-rotate) - 8deg)); } to { opacity: 0; transform: translate(-27%,-14%) rotate(calc(var(--part-rotate) - 12deg)); } }
-@keyframes gateOpenRight { 0%,18% { opacity: 1; transform: rotate(var(--part-rotate)); } 72% { opacity: 1; transform: translate(19%,9%) rotate(calc(var(--part-rotate) + 8deg)); } to { opacity: 0; transform: translate(27%,14%) rotate(calc(var(--part-rotate) + 12deg)); } }
+@keyframes gateReady { 0%,100% { transform: rotate(var(--part-rotate)) scale(1); filter: saturate(1.05); } 48% { transform: rotate(var(--part-rotate)) scale(1.035); filter: saturate(1.25) drop-shadow(0 0 5px rgba(233,84,47,.3)); } }
+@keyframes gateRetractLeft { 0%,14% { opacity: 1; transform: rotate(var(--part-rotate)) scaleX(1); } 78% { opacity: 1; transform: rotate(var(--part-rotate)) scaleX(.62); } to { opacity: .08; transform: rotate(var(--part-rotate)) scaleX(.58); } }
+@keyframes gateRetractRight { 0%,14% { opacity: 1; transform: rotate(var(--part-rotate)) scaleX(1); } 78% { opacity: 1; transform: rotate(var(--part-rotate)) scaleX(.62); } to { opacity: .08; transform: rotate(var(--part-rotate)) scaleX(.58); } }
 @keyframes assembledPulse { 50% { transform: scale(1.06) rotate(var(--part-rotate,0deg)); filter: saturate(1.25) drop-shadow(0 0 7px rgba(232,169,19,.28)); } }
 @keyframes finalRouteReveal { from { opacity: 0; clip-path: circle(0 at 28% 65%); } to { opacity: 1; clip-path: circle(125% at 28% 65%); } }
-@keyframes routeSignal { 0%,100% { transform: scale(1); filter: saturate(1.05); } 45% { transform: scale(1.09) translate(2%,-2%); filter: saturate(1.55) drop-shadow(0 0 7px rgba(233,84,47,.42)); } }
-@keyframes compassCue { 0% { transform: rotate(0) scale(1); } 28% { transform: rotate(-13deg) scale(1.05); } 58% { transform: rotate(10deg) scale(1.08); filter: saturate(1.35) drop-shadow(0 0 8px rgba(139,84,198,.35)); } 100% { transform: rotate(0) scale(1); filter: saturate(1.05); } }
-@keyframes gateEcho { 0%,100% { left: var(--gate-left); top: var(--gate-top); width: var(--gate-width); transform: rotate(var(--gate-rotate)) scale(1); filter: saturate(1.08); } 48% { left: var(--gate-left); top: var(--gate-top); width: var(--gate-width); transform: rotate(calc(var(--gate-rotate) - 4deg)) scale(1.18); filter: saturate(1.55) drop-shadow(0 0 9px rgba(233,84,47,.55)); } }
-@keyframes magnifierSearch { 0%,100% { transform: rotate(var(--part-rotate)) scale(1); filter: saturate(1.05); } 18% { transform: translate(-165%,115%) rotate(-14deg) scale(.54); filter: saturate(1.22) drop-shadow(0 8px 8px rgba(0,0,0,.18)); } 38% { transform: translate(-95%,140%) rotate(-5deg) scale(.55); } 58% { transform: translate(-55%,92%) rotate(7deg) scale(.58); } 76% { transform: translate(-82%,58%) rotate(-10deg) scale(.6); } 90% { transform: translate(-92%,88%) rotate(4deg) scale(.55); filter: saturate(1.35) drop-shadow(0 0 10px rgba(53,104,232,.28)); } }
+@keyframes magnifierFollowRoute {
+  0% { left: 29%; top: 65%; opacity: 0; transform: translate(-53%,-30%) rotate(-18deg) scale(.72); }
+  5% { opacity: 1; transform: translate(-53%,-30%) rotate(-12deg) scale(.82); }
+  16% { left: 37%; top: 70%; transform: translate(-53%,-30%) rotate(8deg) scale(.82); }
+  28% { left: 44.5%; top: 64.5%; transform: translate(-53%,-30%) rotate(-10deg) scale(.84); }
+  44% { left: 61.7%; top: 63.8%; transform: translate(-53%,-30%) rotate(-4deg) scale(.84); }
+  58% { left: 63.2%; top: 48%; transform: translate(-53%,-30%) rotate(-18deg) scale(.86); }
+  70% { left: 63.2%; top: 38.5%; transform: translate(-53%,-30%) rotate(-9deg) scale(.86); }
+  81% { left: 54.2%; top: 38.5%; transform: translate(-53%,-30%) rotate(9deg) scale(.88); }
+  92% { left: 53.8%; top: 49.5%; transform: translate(-53%,-30%) rotate(15deg) scale(.9); }
+  100% { left: 47.5%; top: 50.5%; opacity: 1; transform: translate(-53%,-30%) rotate(-8deg) scale(.94); filter: saturate(1.35) drop-shadow(0 0 11px rgba(53,104,232,.3)); }
+}
 @keyframes routeSegmentIn { from { opacity: 0; transform: scale(.985); filter: saturate(.7); } 58% { opacity: 1; filter: saturate(1.5) drop-shadow(0 0 5px rgba(233,84,47,.48)); } to { opacity: 1; transform: scale(1); filter: saturate(1.05); } }
 @keyframes crossFound { 0% { transform: scale(.92); filter: saturate(.9); } 55% { transform: scale(1.13); filter: saturate(1.3) drop-shadow(0 0 11px rgba(232,169,19,.48)); } 100% { transform: scale(1); filter: saturate(1.05); } }
 @keyframes finaleCaption { 0% { opacity: 0; transform: translate(-50%,24px) rotate(-1deg); } 22%, 82% { opacity: 1; transform: translate(-50%,0) rotate(-1deg); } to { opacity: 0; transform: translate(-50%,-10px) rotate(-1deg); } }
@@ -120,6 +127,7 @@ button { cursor: pointer; }
 .transfer-final-picture { opacity: 0; clip-path: circle(0 at 28% 65%); }
 .journey-final-route, .journey-route-segment { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .journey-route-segment { opacity: 0; }
+.route-magnifier { position: absolute; z-index: 5; left: 29%; top: 65%; width: 24%; height: auto; opacity: 0; border-radius: 50%; mix-blend-mode: multiply; pointer-events: none; transform: translate(-53%,-30%) rotate(-18deg) scale(.72); transform-origin: 53% 30%; filter: saturate(1.15) drop-shadow(0 7px 6px rgba(0,0,0,.16)); }
 .journey-complete .artifact-grace { animation: crossFound .9s .28s cubic-bezier(.2,.82,.2,1) both; }
 .journey-complete .artifact-eyes { translate: var(--piece-react-x,0) var(--piece-react-y,0); transition: translate .28s cubic-bezier(.2,.82,.2,1), filter .28s ease; }
 .journey-complete .artifact-heart { rotate: var(--compass-react,0deg); transition: rotate .28s cubic-bezier(.2,.82,.2,1), filter .28s ease; }

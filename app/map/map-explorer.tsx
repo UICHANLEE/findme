@@ -123,7 +123,7 @@ export default function MapExplorer() {
         <div>
           <span>FLOOR DIRECTORY</span>
           <h2>{activeFloor.label} 호수 안내</h2>
-          <p>층판을 누르면 앞으로 올라옵니다. 호수를 눌러 위치를 확인해 보세요.</p>
+          <p>층을 바꾸고 아래에서 호수를 고르면 지도에 위치가 표시됩니다.</p>
         </div>
         <div className={styles.currentFloor} aria-hidden="true">
           {floorKey === "1f" ? "1F" : "2F"}
@@ -139,6 +139,7 @@ export default function MapExplorer() {
           {floors.map((item) => {
             const active = floorKey === item.key;
             const selected = selectedByFloor[item.key];
+            const selectedSpot = item.rooms.find((room) => room.number === selected);
 
             return (
               <article
@@ -156,7 +157,7 @@ export default function MapExplorer() {
                     alt={`${item.label} 호수 안내도`}
                     width={item.width}
                     height={item.height}
-                    sizes="(max-width: 700px) 760px, 92vw"
+                    sizes="(max-width: 700px) calc(100vw - 40px), 92vw"
                     priority
                   />
                   <button
@@ -190,10 +191,42 @@ export default function MapExplorer() {
                       </button>
                     ))}
                   </div>
+                  {active && selectedSpot && (
+                    <span
+                      className={styles.mobileSelectedRoom}
+                      style={{ left: `${selectedSpot.x}%`, top: `${selectedSpot.y}%` }}
+                      data-room={selectedSpot.number}
+                      aria-label={`${item.label} ${selectedSpot.number}호 선택 위치`}
+                    >
+                      {selectedSpot.number}
+                    </span>
+                  )}
                 </div>
               </article>
             );
           })}
+
+          <div
+            className={styles.mobileFloorSwitcher}
+            data-testid="mobile-floor-switcher"
+            aria-label="지도 층 선택"
+          >
+            {(["1f", "2f"] as FloorKey[]).map((key) => {
+              const active = floorKey === key;
+              return (
+                <button
+                  className={active ? styles.activeMobileFloor : ""}
+                  type="button"
+                  key={key}
+                  onClick={() => selectFloor(key)}
+                  aria-pressed={active}
+                  aria-label={`${floorByKey[key].label} 지도 보기`}
+                >
+                  {key === "1f" ? "1F" : "2F"}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 

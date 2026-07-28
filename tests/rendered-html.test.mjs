@@ -189,6 +189,12 @@ test("map endpoint layers both floors as a room-number directory", async () => {
   assert.match(explorer, /data-testid="floor-stack"/);
   assert.match(explorer, /data-floor=\{item\.key\}/);
   assert.match(explorer, /data-active=\{active\}/);
+  assert.match(explorer, /data-testid="mobile-floor-switcher"/);
+  assert.match(explorer, /className=\{styles\.mobileFloorSwitcher\}/);
+  assert.match(explorer, /const selectedSpot = item\.rooms\.find/);
+  assert.match(explorer, /\{active && selectedSpot && \(/);
+  assert.match(explorer, /data-room=\{selectedSpot\.number\}/);
+  assert.match(explorer, /activeRoomList\.map\(\(room\)/);
   assert.match(explorer, /setFloorKey/);
   assert.match(explorer, /aria-pressed=\{active\}/);
   assert.match(explorer, /disabled=\{!active\}/);
@@ -215,6 +221,32 @@ test("map endpoint layers both floors as a room-number directory", async () => {
   assert.match(styles, /\.activeLayer/);
   assert.match(styles, /perspective:/);
   assert.match(styles, /@media \(max-width: 700px\)/);
+
+  const mobileMedia = styles.match(
+    /@media \(max-width: 700px\) \{([\s\S]*?)\n\}\n\n@media \(prefers-reduced-motion/,
+  );
+  assert.ok(mobileMedia, "700px mobile media query must exist");
+  const mobileStyles = mobileMedia[1];
+  assert.match(mobileStyles, /\.floorTabs\s*\{[^}]*display:\s*none/);
+  assert.match(
+    mobileStyles,
+    /\.mobileFloorSwitcher\s*\{[^}]*position:\s*absolute/,
+  );
+  assert.match(
+    mobileStyles,
+    /\.mobileFloorSwitcher\s*\{[^}]*display:\s*flex/,
+  );
+  assert.match(mobileStyles, /\.mobileFloorSwitcher\s*\{[^}]*right:\s*[^;]+;/);
+  assert.match(mobileStyles, /\.mobileFloorSwitcher\s*\{[^}]*bottom:\s*[^;]+;/);
+  assert.match(
+    mobileStyles,
+    /\.stackViewport\s*\{[^}]*(?:overflow|overflow-x):\s*hidden/,
+  );
+  assert.match(mobileStyles, /\.floorStack\s*\{[^}]*width:\s*100%/);
+  assert.match(mobileStyles, /\.floorStack\s*\{[^}]*min-width:\s*0/);
+  assert.match(mobileStyles, /\.roomOverlay\s*\{[^}]*display:\s*none/);
+  assert.doesNotMatch(mobileStyles, /(?:width|min-width):\s*780px/);
+
   await access(new URL("public/maps/directory-1f.webp", root));
   await access(new URL("public/maps/directory-2f.webp", root));
 });

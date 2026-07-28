@@ -208,6 +208,11 @@
   isolation: isolate;
 }
 
+.mobileFloorSwitcher,
+.mobileSelectedRoom {
+  display: none;
+}
+
 .floorLayer {
   position: absolute;
   left: 4%;
@@ -515,91 +520,154 @@
     padding: 26px 20px 76px;
   }
 
-  .floorTabs button {
-    min-height: 76px;
-    padding: 12px 14px;
-  }
-
-  .floorTabs button span {
-    font-size: 34px;
-  }
-
-  .floorTabs button small {
-    font-size: 8px;
+  .floorTabs {
+    display: none;
   }
 
   .mapHeader {
-    padding-top: 34px;
+    padding: 8px 0 15px;
     align-items: center;
   }
 
   .mapHeader h2 {
-    font-size: 42px;
+    font-size: 38px;
   }
 
   .mapHeader p {
-    max-width: 245px;
+    max-width: 280px;
     font-size: 9px;
   }
 
   .currentFloor {
-    min-width: 66px;
-    padding: 12px 9px 10px;
-    font-size: 27px;
+    display: none;
   }
 
   .stackViewport {
+    position: relative;
+    overflow: hidden;
     border-width: 2px;
     box-shadow: 8px 9px 0 rgba(23, 23, 19, .09);
+    touch-action: pan-y;
   }
 
   .floorStack {
-    width: 780px;
-    min-width: 780px;
-    height: 500px;
+    width: 100%;
+    min-width: 0;
+    height: clamp(260px, 72vw, 300px);
   }
 
   .floorLayer {
-    left: 3%;
-    width: 94%;
+    left: 2%;
+    width: 96%;
+    transition:
+      top 520ms cubic-bezier(.2, .74, .18, 1),
+      transform 520ms cubic-bezier(.2, .74, .18, 1),
+      opacity 420ms ease,
+      filter 520ms ease;
   }
 
-  .floorLayer[data-floor="2f"] {
-    top: 7%;
+  .floorStack[data-current-floor="1f"] .floorLayer[data-floor="1f"] {
+    top: 36%;
   }
 
-  .floorLayer[data-floor="1f"] {
-    top: 39%;
+  .floorStack[data-current-floor="1f"] .floorLayer[data-floor="2f"] {
+    top: 11%;
+  }
+
+  .floorStack[data-current-floor="2f"] .floorLayer[data-floor="2f"] {
+    top: 17%;
+  }
+
+  .floorStack[data-current-floor="2f"] .floorLayer[data-floor="1f"] {
+    top: 47%;
+  }
+
+  .activeLayer {
+    opacity: 1;
+    filter: drop-shadow(0 15px 12px rgba(24, 29, 46, .22));
+    transform: scale(1.02);
+  }
+
+  .inactiveLayer {
+    opacity: .18;
+    filter: saturate(.58) drop-shadow(0 8px 9px rgba(24, 29, 46, .1));
+    transform: scale(.94);
   }
 
   .floorRail {
-    min-width: 56px;
-    padding: 7px 6px 6px;
+    display: none;
   }
 
-  .floorRail b {
-    font-size: 22px;
+  .roomOverlay {
+    display: none;
   }
 
-  .roomButton {
-    min-width: 39px;
-    min-height: 27px;
-    padding: 3px 5px;
-    font-size: 9px;
+  .mobileSelectedRoom {
+    position: absolute;
+    z-index: 4;
+    min-width: 44px;
+    min-height: 29px;
+    padding: 4px 7px 3px;
+    display: grid;
+    place-items: center;
+    border: 2px solid var(--poster-blue);
+    border-radius: 7px 10px 6px 9px;
+    color: white;
+    background: var(--poster-blue);
+    box-shadow:
+      3px 4px 0 rgba(25, 63, 174, .22),
+      0 0 0 5px rgba(237, 176, 26, .42);
+    font: 800 10px/1 var(--font-geist-mono);
+    transform: translate(-50%, -50%);
+  }
+
+  .mobileFloorSwitcher {
+    position: absolute;
+    right: 12px;
+    bottom: 12px;
+    z-index: 10;
+    padding: 5px;
+    display: flex;
+    gap: 4px;
+    border: 2px solid var(--ink);
+    border-radius: 10px 14px 9px 12px;
+    background: rgba(246, 240, 229, .96);
+    box-shadow: 5px 6px 0 rgba(23, 23, 19, .14);
+  }
+
+  .mobileFloorSwitcher button {
+    width: 48px;
+    height: 42px;
+    padding: 0;
+    border: 0;
+    border-radius: 6px 9px 5px 8px;
+    color: var(--ink);
+    background: transparent;
+    font: 800 20px/1 var(--font-hand);
+  }
+
+  .mobileFloorSwitcher .activeMobileFloor {
+    color: white;
+    background: var(--poster-blue);
+  }
+
+  .mobileFloorSwitcher button:focus-visible {
+    outline: 3px solid var(--poster-yellow);
+    outline-offset: 2px;
   }
 
   .roomDirectory {
-    margin-top: 28px;
+    margin-top: 22px;
     gap: 18px;
   }
 
   .selectedRoom {
-    min-height: 138px;
-    padding: 21px;
+    min-height: 112px;
+    padding: 18px 20px;
   }
 
   .selectedRoom strong {
-    font-size: 36px;
+    font-size: 33px;
   }
 
   .roomList[data-floor] {

@@ -12,6 +12,23 @@ type RoomSpot = {
   y: number;
 };
 
+type SharedSpaceSpot = {
+  id: string;
+  label: string;
+  x: number;
+  y: number;
+  featured?: boolean;
+};
+
+type MapLocation = {
+  id: string;
+  label: string;
+  x: number;
+  y: number;
+  kind: "room" | "space";
+  featured?: boolean;
+};
+
 type Floor = {
   key: FloorKey;
   label: string;
@@ -19,6 +36,7 @@ type Floor = {
   width: number;
   height: number;
   rooms: RoomSpot[];
+  sharedSpaces: SharedSpaceSpot[];
 };
 
 const floors: Floor[] = [
@@ -51,6 +69,11 @@ const floors: Floor[] = [
       { number: "204", x: 90, y: 78.5 },
       { number: "205", x: 94.5, y: 78.5 },
     ],
+    sharedSpaces: [
+      { id: "seminar-2", label: "세미나실 2", x: 50.5, y: 18.5, featured: true },
+      { id: "lobby-2f", label: "2층 로비", x: 50, y: 53, featured: true },
+      { id: "clinic", label: "양호실", x: 68.3, y: 78.5 },
+    ],
   },
   {
     key: "1f",
@@ -68,12 +91,35 @@ const floors: Floor[] = [
       { number: "102", x: 89, y: 79.5 },
       { number: "101", x: 94, y: 79.5 },
     ],
+    sharedSpaces: [
+      { id: "main-hall", label: "대강당", x: 14, y: 55, featured: true },
+      { id: "small-hall", label: "소강당", x: 26.5, y: 69, featured: true },
+      { id: "youth-plaza", label: "청춘광장", x: 50, y: 53, featured: true },
+      { id: "cafeteria", label: "식당", x: 84, y: 34, featured: true },
+      { id: "seminar-1", label: "세미나실 1", x: 80.5, y: 79.5, featured: true },
+      { id: "director-office", label: "원장실", x: 62.5, y: 79.5 },
+      { id: "office", label: "사무실", x: 72.5, y: 79.5 },
+    ],
   },
 ];
 
 const floorByKey = Object.fromEntries(
   floors.map((floor) => [floor.key, floor]),
 ) as Record<FloorKey, Floor>;
+
+const getFloorLocations = (floor: Floor): MapLocation[] => [
+  ...floor.rooms.map((room) => ({
+    id: room.number,
+    label: `${room.number}호`,
+    x: room.x,
+    y: room.y,
+    kind: "room" as const,
+  })),
+  ...floor.sharedSpaces.map((space) => ({
+    ...space,
+    kind: "space" as const,
+  })),
+];
 
 export default function MapExplorer() {
   const [floorKey, setFloorKey] = useState<FloorKey>("1f");
@@ -83,7 +129,10 @@ export default function MapExplorer() {
   });
 
   const activeFloor = floorByKey[floorKey];
-  const selectedRoom = selectedByFloor[floorKey];
+  const selectedLocationId = selectedByFloor[floorKey];
+  const selectedLocation = getFloorLocations(activeFloor).find(
+    (location) => location.id === selectedLocationId,
+  );
   const activeRoomList = [...activeFloor.rooms].sort(
     (left, right) => Number(left.number) - Number(right.number),
   );
@@ -92,9 +141,12 @@ export default function MapExplorer() {
     setFloorKey(nextFloor);
   };
 
-  const selectRoom = (nextFloor: FloorKey, room: string) => {
+  const selectLocation = (nextFloor: FloorKey, locationId: string) => {
     setFloorKey(nextFloor);
-    setSelectedByFloor((current) => ({ ...current, [nextFloor]: room }));
+    setSelectedByFloor((current) => ({
+      ...current,
+      [nextFloor]: locationId,
+    }));
   };
 
   return (
@@ -113,7 +165,9 @@ export default function MapExplorer() {
               aria-pressed={active}
             >
               <span>{item.label}</span>
-              <small>{item.rooms.length}개 호실</small>
+              <small>
+                {item.rooms.length}개 호실 · {item.sharedSpaces.length}개 주요 공간
+              </small>
             </button>
           );
         })}
@@ -122,8 +176,8 @@ export default function MapExplorer() {
       <div className={styles.mapHeader}>
         <div>
           <span>FLOOR DIRECTORY</span>
-          <h2>{activeFloor.label} 호수 안내</h2>
-          <p>층을 바꾸고 아래에서 호수를 고르면 지도에 위치가 표시됩니다.</p>
+          <h2>{activeFloor.label} 공간 안내</h2>
+          <p>층을 바꾸고 호수나 주요 공간을 고르면 지도에 위치가 표시됩니다.</p>
         </div>
         <div className={styles.currentFloor} aria-hidden="true">
           {floorKey === "1f" ? "1F" : "2F"}
@@ -139,7 +193,9 @@ export default function MapExplorer() {
           {floors.map((item) => {
             const active = floorKey === item.key;
             const selected = selectedByFloor[item.key];
-            const selectedSpot = item.rooms.find((room) => room.number === selected);
+            const selectedSpot = getFloorLocations(item).find(
+              (location) => location.id === selected,
+            );
 
             return (
               <article
@@ -182,7 +238,7 @@ export default function MapExplorer() {
                         type="button"
                         key={room.number}
                         data-room={room.number}
-                        onClick={() => selectRoom(item.key, room.number)}
+                        onClick={() => selectLocation(item.key, room.number)}
                         disabled={!active}
                         aria-label={`${item.label} ${room.number}호 위치 보기`}
                         aria-pressed={active && selected === room.number}
@@ -191,14 +247,39 @@ export default function MapExplorer() {
                       </button>
                     ))}
                   </div>
-                  {active && selectedSpot && (
-                    <span
-                      className={styles.mobileSelectedRoom}
-                      style={{ left: `${selectedSpot.x}%`, top: `${selectedSpot.y}%` }}
-                      data-room={selectedSpot.number}
-                      aria-label={`${item.label} ${selectedSpot.number}호 선택 위치`}
+                  {active && (
+                    <div
+                      className={styles.sharedSpaceOverlay}
+                      aria-label={`${item.label} 주요 공간`}
                     >
-                      {selectedSpot.number}
+                      {item.sharedSpaces.map((space) => (
+                        <button
+                          className={`${styles.sharedSpaceButton} ${
+                            selected === space.id ? styles.activeSpace : ""
+                          }`}
+                          style={{ left: `${space.x}%`, top: `${space.y}%` }}
+                          type="button"
+                          key={space.id}
+                          data-space={space.id}
+                          data-featured={space.featured ? "true" : "false"}
+                          onClick={() => selectLocation(item.key, space.id)}
+                          aria-label={`${space.label} 위치 보기`}
+                          aria-pressed={selected === space.id}
+                        >
+                          {space.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {active && selectedSpot?.kind === "room" && (
+                    <span
+                      className={styles.mobileSelectedLocation}
+                      style={{ left: `${selectedSpot.x}%`, top: `${selectedSpot.y}%` }}
+                      data-testid="mobile-selected-location"
+                      data-location={selectedSpot.id}
+                      aria-label={`${item.label} ${selectedSpot.label} 선택 위치`}
+                    >
+                      {selectedSpot.label}
                     </span>
                   )}
                 </div>
@@ -233,26 +314,63 @@ export default function MapExplorer() {
       <div className={styles.roomDirectory}>
         <div className={styles.selectedRoom} aria-live="polite">
           <span>YOU ARE VIEWING</span>
-          <strong>{activeFloor.label} · {selectedRoom}호</strong>
-          <p>선택한 호수가 안내도 위에 진하게 표시됩니다.</p>
+          <strong>
+            {activeFloor.label} · {selectedLocation?.label ?? "위치 선택"}
+          </strong>
+          <p>선택한 호수와 주요 공간이 안내도 위에 진하게 표시됩니다.</p>
         </div>
-        <div
-          className={styles.roomList}
-          data-floor={activeFloor.key}
-          aria-label={`${activeFloor.label} 호수 목록`}
-        >
-          {activeRoomList.map((room) => (
-            <button
-              className={selectedRoom === room.number ? styles.activeRoomChip : ""}
-              type="button"
-              key={room.number}
-              onClick={() => selectRoom(activeFloor.key, room.number)}
-              aria-pressed={selectedRoom === room.number}
+        <div className={styles.directoryLists}>
+          <section className={styles.directorySection}>
+            <div className={styles.directoryHeading}>
+              <strong>주요 공간</strong>
+              <small>찾는 장소를 눌러 위치를 확인하세요.</small>
+            </div>
+            <div
+              className={styles.sharedSpaceList}
+              aria-label={`${activeFloor.label} 주요 공간 목록`}
             >
-              {room.number}
-              <small>호</small>
-            </button>
-          ))}
+              {activeFloor.sharedSpaces.map((space) => (
+                <button
+                  className={
+                    selectedLocationId === space.id ? styles.activeSpaceChip : ""
+                  }
+                  type="button"
+                  key={space.id}
+                  data-space={space.id}
+                  onClick={() => selectLocation(activeFloor.key, space.id)}
+                  aria-pressed={selectedLocationId === space.id}
+                >
+                  {space.label}
+                </button>
+              ))}
+            </div>
+          </section>
+          <section className={styles.directorySection}>
+            <div className={styles.directoryHeading}>
+              <strong>호실</strong>
+              <small>{activeRoomList.length}개</small>
+            </div>
+            <div
+              className={styles.roomList}
+              data-floor={activeFloor.key}
+              aria-label={`${activeFloor.label} 호수 목록`}
+            >
+              {activeRoomList.map((room) => (
+                <button
+                  className={
+                    selectedLocationId === room.number ? styles.activeRoomChip : ""
+                  }
+                  type="button"
+                  key={room.number}
+                  onClick={() => selectLocation(activeFloor.key, room.number)}
+                  aria-pressed={selectedLocationId === room.number}
+                >
+                  {room.number}
+                  <small>호</small>
+                </button>
+              ))}
+            </div>
+          </section>
         </div>
       </div>
     </section>

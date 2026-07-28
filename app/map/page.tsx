@@ -6,7 +6,7 @@ import styles from "./map.module.css";
 
 export const metadata: Metadata = {
   title: "생활관 층별 안내 | FIND IT",
-  description: "생활관 1층과 2층의 호수를 한눈에 확인하는 FIND IT 층별 안내",
+  description: "생활관 1층과 2층의 호수와 주요 공간을 한눈에 확인하는 FIND IT 층별 안내",
 };
 
 export default function MapPage() {
@@ -30,7 +30,7 @@ export default function MapPage() {
         </div>
         <div className={styles.introCopy}>
           <strong>찾는 방은 몇 층에 있나요?</strong>
-          <p>백화점 층별 안내처럼 겹쳐진 층판을 누르고, 호수를 선택하면 위치가 바로 표시돼요.</p>
+          <p>백화점 층별 안내처럼 겹쳐진 층판을 누르고, 호수나 주요 공간을 선택하면 위치가 바로 표시돼요.</p>
           <small>층을 바꾸면 선택한 안내판이 앞으로 올라옵니다.</small>
         </div>
       </section>

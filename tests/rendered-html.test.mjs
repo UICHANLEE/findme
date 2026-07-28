@@ -173,7 +173,7 @@ test("in-app camera scans a saved team's QR without another name prompt", async 
   assert.doesNotMatch(home, /jaegunadmin\.html/);
 });
 
-test("map endpoint layers both floors as a room-number directory", async () => {
+test("map endpoint layers rooms and major shared spaces across both floors", async () => {
   const [page, explorer, styles] = await Promise.all([
     read("app/map/page.tsx"),
     read("app/map/map-explorer.tsx"),
@@ -191,9 +191,16 @@ test("map endpoint layers both floors as a room-number directory", async () => {
   assert.match(explorer, /data-active=\{active\}/);
   assert.match(explorer, /data-testid="mobile-floor-switcher"/);
   assert.match(explorer, /className=\{styles\.mobileFloorSwitcher\}/);
-  assert.match(explorer, /const selectedSpot = item\.rooms\.find/);
-  assert.match(explorer, /\{active && selectedSpot && \(/);
-  assert.match(explorer, /data-room=\{selectedSpot\.number\}/);
+  assert.match(explorer, /type SharedSpaceSpot/);
+  assert.match(explorer, /sharedSpaces: SharedSpaceSpot\[\]/);
+  assert.match(explorer, /const getFloorLocations/);
+  assert.match(explorer, /const selectedSpot = getFloorLocations\(item\)\.find/);
+  assert.match(explorer, /\{active && selectedSpot\?\.kind === "room" && \(/);
+  assert.match(explorer, /data-testid="mobile-selected-location"/);
+  assert.match(explorer, /data-location=\{selectedSpot\.id\}/);
+  assert.match(explorer, /item\.sharedSpaces\.map\(\(space\)/);
+  assert.match(explorer, /activeFloor\.sharedSpaces\.map\(\(space\)/);
+  assert.match(explorer, /data-space=\{space\.id\}/);
   assert.match(explorer, /activeRoomList\.map\(\(room\)/);
   assert.match(explorer, /setFloorKey/);
   assert.match(explorer, /aria-pressed=\{active\}/);
@@ -209,9 +216,25 @@ test("map endpoint layers both floors as a room-number directory", async () => {
   }
   assert.doesNotMatch(explorer, /["']103["']/);
   assert.doesNotMatch(explorer, /\d{3}\s*[·~–-]\s*\d{3}/);
+
+  const majorSpaces = [
+    "대강당",
+    "소강당",
+    "청춘광장",
+    "식당",
+    "세미나실 1",
+    "원장실",
+    "사무실",
+    "2층 로비",
+    "세미나실 2",
+    "양호실",
+  ];
+  for (const space of majorSpaces) {
+    assert.match(explorer, new RegExp(`["']${space}["']`));
+  }
   assert.doesNotMatch(
     explorer,
-    /소강당|대강당|청춘광장|식당|세미나실|로비|계단|수용|요금|화장실|비품실|파란색/,
+    /계단|수용인원|요금|화장실|비품실|파란색/,
   );
   assert.doesNotMatch(explorer, /living-center-[12]f\.png/);
   assert.doesNotMatch(explorer, /viewport\.scrollTo/);
@@ -219,6 +242,9 @@ test("map endpoint layers both floors as a room-number directory", async () => {
   assert.match(styles, /\.floorStack/);
   assert.match(styles, /\.floorLayer/);
   assert.match(styles, /\.activeLayer/);
+  assert.match(styles, /\.sharedSpaceButton/);
+  assert.match(styles, /\.sharedSpaceList/);
+  assert.match(styles, /\.mobileSelectedLocation/);
   assert.match(styles, /perspective:/);
   assert.match(styles, /@media \(max-width: 700px\)/);
 

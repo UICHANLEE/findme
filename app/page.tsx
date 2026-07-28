@@ -18,11 +18,11 @@ const roomAfterglow: Record<RoomKey, { line: string; reference: string }> = {
   grace: { line: "나의 은혜가 네게 족하도다", reference: "고린도후서 12:9" },
 };
 
-const artifactStyle = (room: FindRoom, assembled = false) => ({
-  "--part-left": `${room.key === "sound" && !assembled ? 18.5 : room.collectionPosition.left}%`,
-  "--part-top": `${room.key === "sound" && !assembled ? 63.2 : room.collectionPosition.top}%`,
-  "--part-width": `${room.key === "sound" && !assembled ? 12.5 : room.collectionPosition.width}%`,
-  "--part-rotate": `${room.key === "sound" && !assembled ? 52 : room.collectionPosition.rotate}deg`,
+const artifactStyle = (room: FindRoom) => ({
+  "--part-left": `${room.collectionPosition.left}%`,
+  "--part-top": `${room.collectionPosition.top}%`,
+  "--part-width": `${room.collectionPosition.width}%`,
+  "--part-rotate": `${room.collectionPosition.rotate}deg`,
   "--gate-left": `${room.collectionPosition.left}%`,
   "--gate-top": `${room.collectionPosition.top}%`,
   "--gate-width": `${room.collectionPosition.width}%`,
@@ -154,16 +154,16 @@ function HomeContent() {
           {teamName && <div className={`waiting ${myState ? "journey" : ""}`}><span className="pulse" /> {myState ? "방을 찾으러 다니는 중.." : "입장 QR을 스캔하면 여정이 시작돼요"}</div>}
         </div>
         <div className={`hero-art journey-board ${journeyComplete ? "journey-complete" : ""}`} onPointerMove={moveHeroArt} onPointerLeave={resetHeroArt}>
-          <div className="journey-board-heading"><span>{journeyComplete ? "THE WAY IS OPEN · 십자가를 찾았어요" : "OUR FIND POSTER"}</span><strong>{teamName || "우리 조"}</strong><b>{completedRooms.length}<small> / 5</small></b></div>
+          <div className="journey-board-heading"><span>{journeyComplete ? "THE WAY IS OPEN · 십자가를 찾았어요" : completedRooms.length ? `FOUND PIECES · ${completedRooms.length}개 보관 중` : "OUR FIND POSTER"}</span><strong>{teamName || "우리 조"}</strong><b>{completedRooms.length}<small> / 5</small></b></div>
           <div className="journey-canvas" ref={journeyCanvasRef}>
             <Image className="journey-base" src="/collection/maze-base.jpg" alt="다섯 요소를 모아 완성하는 손그림 미로 포스터" width={900} height={900} unoptimized priority />
             {rooms.map((room) => {
-              const collected = completedRooms.includes(room.key) || collectingRoom?.key === room.key;
-              return <Image key={room.key} style={artifactStyle(room, journeyComplete)} className={`journey-artifact artifact-${room.key} ${collected ? "collected" : ""} ${collectingRoom?.key === room.key ? "arriving" : ""}`} src={room.collectionAsset} alt={collected ? `${room.artifactName} 획득 완료` : `${room.artifactName} 미획득`} width={room.collectionSize[0]} height={room.collectionSize[1]} />;
+              const stored = completedRooms.includes(room.key);
+              return <Image key={room.key} style={artifactStyle(room)} className={`journey-artifact artifact-${room.key} ${journeyComplete ? "collected" : ""}`} src={room.collectionAsset} alt={journeyComplete ? `${room.artifactName} 포스터 반영 완료` : stored ? `${room.artifactName} 보관 중` : `${room.artifactName} 미획득`} width={room.collectionSize[0]} height={room.collectionSize[1]} />;
             })}
             {journeyComplete && <JourneyFoundPicture />}
           </div>
-          <div className="artifact-legend">{rooms.map((room) => <span className={completedRooms.includes(room.key) || collectingRoom?.key === room.key ? "done" : ""} key={room.key}><Image src={room.emblem} alt="" width={42} height={42} /><b>{room.artifactName}</b></span>)}</div>
+          <div className="artifact-legend">{rooms.map((room) => <span className={completedRooms.includes(room.key) ? "done stored" : ""} key={room.key}><Image src={room.emblem} alt="" width={42} height={42} /><b>{completedRooms.includes(room.key) && !journeyComplete ? "보관 중" : room.artifactName}</b></span>)}</div>
         </div>
       </section>
 
@@ -231,6 +231,7 @@ function JourneyFoundPicture({ transfer = false }: { transfer?: boolean }) {
 function CollectionTransfer({ room, completedRooms, canvasRef, finalCompletion, onDone }: { room: FindRoom; completedRooms: RoomKey[]; canvasRef: React.RefObject<HTMLDivElement | null>; finalCompletion: boolean; onDone: () => void }) {
   const [moving, setMoving] = useState(false);
   const [settled, setSettled] = useState(false);
+  const [assembling, setAssembling] = useState(false);
   const [gateOpening, setGateOpening] = useState(false);
   const [finalScene, setFinalScene] = useState(false);
   const [routeSearching, setRouteSearching] = useState(false);
@@ -249,7 +250,26 @@ function CollectionTransfer({ room, completedRooms, canvasRef, finalCompletion, 
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const mobile = window.matchMedia("(max-width: 700px)").matches;
 
-    if (mobile) canvasRef.current?.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "center" });
+    if (!finalCompletion) {
+      if (reducedMotion) {
+        setMoving(true);
+        setSettled(true);
+        timers.push(window.setTimeout(() => {
+          setVisible(false);
+          onDone();
+        }, 420));
+      } else {
+        timers.push(window.setTimeout(() => setMoving(true), 180));
+        timers.push(window.setTimeout(() => setSettled(true), 1050));
+        timers.push(window.setTimeout(() => setAfterglow(true), 2850));
+        timers.push(window.setTimeout(() => setFinished(true), 5100));
+        timers.push(window.setTimeout(() => {
+          setVisible(false);
+          onDone();
+        }, 6000));
+      }
+      return () => timers.forEach((timer) => window.clearTimeout(timer));
+    }
 
     const prepare = () => {
       const canvas = canvasRef.current;
@@ -260,18 +280,21 @@ function CollectionTransfer({ room, completedRooms, canvasRef, finalCompletion, 
       if (!canvas || !source || !poster || !target || !flyer) return;
 
       const canvasRect = canvas.getBoundingClientRect();
-      poster.style.left = `${canvasRect.left}px`;
-      poster.style.top = `${canvasRect.top}px`;
-      poster.style.width = `${canvasRect.width}px`;
-      poster.style.height = `${canvasRect.height}px`;
+      const posterSize = mobile ? Math.min(window.innerWidth - 32, window.innerHeight - 150) : canvasRect.width;
+      const posterLeft = mobile ? (window.innerWidth - posterSize) / 2 : canvasRect.left;
+      const posterTop = mobile ? (window.innerHeight - posterSize) / 2 : canvasRect.top;
+      poster.style.left = `${posterLeft}px`;
+      poster.style.top = `${posterTop}px`;
+      poster.style.width = `${posterSize}px`;
+      poster.style.height = `${posterSize}px`;
 
       const sourceRect = source.getBoundingClientRect();
       const startWidth = Math.min(sourceRect.width * 0.55, 150);
       const startHeight = startWidth * room.collectionSize[1] / room.collectionSize[0];
       const startLeft = sourceRect.left + sourceRect.width / 2 - startWidth / 2;
       const startTop = sourceRect.top + sourceRect.height / 2 - startHeight / 2;
-      const targetLeft = canvasRect.left + target.offsetLeft;
-      const targetTop = canvasRect.top + target.offsetTop;
+      const targetLeft = posterLeft + target.offsetLeft;
+      const targetTop = posterTop + target.offsetTop;
       const targetWidth = target.offsetWidth;
       const targetHeight = target.offsetHeight;
       const midWidth = Math.max(startWidth, targetWidth * 0.72);
@@ -287,16 +310,15 @@ function CollectionTransfer({ room, completedRooms, canvasRef, finalCompletion, 
       if (reducedMotion) {
         setMoving(true);
         setSettled(true);
-        if (finalCompletion) {
-          setGateOpening(true);
-          setFinalScene(true);
-          setRouteSearching(true);
-          setRouteComplete(true);
-        }
+        setAssembling(true);
+        setGateOpening(true);
+        setFinalScene(true);
+        setRouteSearching(true);
+        setRouteComplete(true);
         timers.push(window.setTimeout(() => {
           setVisible(false);
           onDone();
-        }, finalCompletion ? 700 : 320));
+        }, 700));
         return;
       }
 
@@ -310,27 +332,19 @@ function CollectionTransfer({ room, completedRooms, canvasRef, finalCompletion, 
       ], { duration: 3380, delay: 580, easing: "cubic-bezier(.18,.72,.2,1)", fill: "forwards" });
 
       timers.push(window.setTimeout(() => setSettled(true), 3600));
-      if (finalCompletion) {
-        timers.push(window.setTimeout(() => setGateOpening(true), 4800));
-        timers.push(window.setTimeout(() => {
-          setFinalScene(true);
-          setRouteSearching(true);
-        }, 7100));
-        timers.push(window.setTimeout(() => setRouteComplete(true), 13700));
-        timers.push(window.setTimeout(() => setAfterglow(true), 15200));
-        timers.push(window.setTimeout(() => setFinished(true), 20500));
-        timers.push(window.setTimeout(() => {
-          setVisible(false);
-          onDone();
-        }, 21500));
-      } else {
-        timers.push(window.setTimeout(() => setAfterglow(true), 4050));
-        timers.push(window.setTimeout(() => setFinished(true), 5850));
-        timers.push(window.setTimeout(() => {
-          setVisible(false);
-          onDone();
-        }, 6550));
-      }
+      timers.push(window.setTimeout(() => setAssembling(true), 4300));
+      timers.push(window.setTimeout(() => setGateOpening(true), 8500));
+      timers.push(window.setTimeout(() => {
+        setFinalScene(true);
+        setRouteSearching(true);
+      }, 10800));
+      timers.push(window.setTimeout(() => setRouteComplete(true), 17400));
+      timers.push(window.setTimeout(() => setAfterglow(true), 18900));
+      timers.push(window.setTimeout(() => setFinished(true), 24200));
+      timers.push(window.setTimeout(() => {
+        setVisible(false);
+        onDone();
+      }, 25200));
     };
 
     timers.push(window.setTimeout(prepare, mobile ? 480 : 90));
@@ -341,30 +355,40 @@ function CollectionTransfer({ room, completedRooms, canvasRef, finalCompletion, 
   }, [canvasRef, finalCompletion, onDone, room]);
 
   if (!visible) return null;
+  const assemblyRooms = completedRooms
+    .map((key) => rooms.find((item) => item.key === key))
+    .filter((item): item is FindRoom => Boolean(item));
+  const soundAssemblyIndex = Math.max(0, assemblyRooms.findIndex((item) => item.key === "sound"));
 
   return (
-    <section className={`collection-transfer ${finalCompletion ? "is-finale" : ""} ${moving ? "is-moving" : ""} ${settled ? "is-settled" : ""} ${gateOpening ? "is-gate-opening" : ""} ${finalScene ? "is-final-scene" : ""} ${routeSearching ? "is-route-searching" : ""} ${routeComplete ? "is-route-complete" : ""} ${afterglow ? "is-afterglow" : ""} ${finished ? "is-finished" : ""}`} style={{ "--accent": room.color, "--soft": room.soft } as React.CSSProperties} aria-live="polite">
+    <section className={`collection-transfer ${finalCompletion ? "is-finale" : "is-keepsake"} ${moving ? "is-moving" : ""} ${settled ? "is-settled" : ""} ${assembling ? "is-assembling" : ""} ${gateOpening ? "is-gate-opening" : ""} ${finalScene ? "is-final-scene" : ""} ${routeSearching ? "is-route-searching" : ""} ${routeComplete ? "is-route-complete" : ""} ${afterglow ? "is-afterglow" : ""} ${finished ? "is-finished" : ""}`} style={{ "--accent": room.color, "--soft": room.soft } as React.CSSProperties} aria-live="polite">
       <div className="transfer-room-panel">
-        <span>ROOM COMPLETE · 퇴장 완료</span>
-        <div className="transfer-source-logo" ref={sourceRef}>
-          <Image src={room.emblem} alt={`${room.name} 로고`} width={600} height={600} priority />
+        <span>{finalCompletion ? "LAST PART FOUND · 5/5" : `PART FOUND · ${completedRooms.length}/5`}</span>
+        <div className={`transfer-found-piece transfer-found-piece-${room.key}`} ref={sourceRef}>
+          <Image src={room.collectionAsset} alt={`${room.artifactName} 획득`} width={room.collectionSize[0]} height={room.collectionSize[1]} priority />
         </div>
-        <h2>{room.name}</h2>
-        <p>로고에서 <b>{room.artifactName}</b>을 발견했어요</p>
+        <h2>{room.artifactName}</h2>
+        <p>{room.name}에서 찾은 파츠를 <b>{finalCompletion ? "이제 하나씩 펼쳐 볼게요" : "안전하게 보관했어요"}</b></p>
       </div>
-      <div className="transfer-poster" ref={posterRef} aria-label={`${room.artifactName}이 포스터의 정확한 위치로 이동 중`}>
+      {finalCompletion && <div className="transfer-poster" ref={posterRef} aria-label="보관했던 다섯 파츠가 하나씩 포스터에 반영되는 중">
         <Image className="transfer-poster-base" src="/collection/maze-base.jpg" alt="" width={900} height={900} unoptimized priority />
-        {rooms.filter((item) => item.key !== room.key && completedRooms.includes(item.key)).map((item) => <Image key={item.key} style={artifactStyle(item, finalCompletion && item.key === "sound")} className={`journey-artifact artifact-${item.key} collected`} src={item.collectionAsset} alt="" width={item.collectionSize[0]} height={item.collectionSize[1]} />)}
-        <Image ref={targetRef} style={artifactStyle(room, finalCompletion && room.key === "sound")} className={`journey-artifact transfer-target artifact-${room.key} collected`} src={room.collectionAsset} alt="" width={room.collectionSize[0]} height={room.collectionSize[1]} />
-        {finalCompletion && <>
-          <Image style={artifactStyle(soundRoom, true)} className="sound-wall-closed sound-wall-closed-left" src="/collection/sound-wall-closed.webp" alt="" width={600} height={600} unoptimized priority />
-          <Image style={artifactStyle(soundRoom, true)} className="sound-wall-closed sound-wall-closed-right" src="/collection/sound-wall-closed.webp" alt="" width={600} height={600} unoptimized priority />
-        </>}
-        {finalCompletion && <JourneyFoundPicture transfer />}
-        {finalCompletion && <Image className="route-magnifier" src={eyesRoom.collectionAsset} alt="붉은 점선 길을 따라 십자가를 찾는 돋보기" width={600} height={600} unoptimized priority />}
-      </div>
-      <Image ref={flyerRef} className={`transfer-flyer transfer-flyer-${room.key}`} src={room.collectionAsset} alt={`${room.artifactName} 이동 중`} width={room.collectionSize[0]} height={room.collectionSize[1]} priority />
-      <div className="transfer-caption"><span>NEW FIND · {completedRooms.length}/5</span><strong>{room.artifactName}</strong><small>여정 속에서 발견한 한 조각</small></div>
+        {assemblyRooms.map((item, index) => <Image
+          key={item.key}
+          ref={item.key === room.key ? targetRef : undefined}
+          style={{ ...artifactStyle(item), "--assembly-delay": `${index * 720}ms` } as React.CSSProperties}
+          className={`journey-artifact assembly-artifact artifact-${item.key} ${item.key === "sound" ? "assembled-gate" : ""}`}
+          src={item.collectionAsset}
+          alt={`${item.artifactName} ${index + 1}번째 작동`}
+          width={item.collectionSize[0]}
+          height={item.collectionSize[1]}
+        />)}
+        <Image style={{ ...artifactStyle(soundRoom), "--assembly-delay": `${soundAssemblyIndex * 720}ms` } as React.CSSProperties} className="sound-wall-closed sound-wall-closed-left assembly-wall" src="/collection/sound-wall-closed.webp" alt="" width={600} height={600} unoptimized priority />
+        <Image style={{ ...artifactStyle(soundRoom), "--assembly-delay": `${soundAssemblyIndex * 720}ms` } as React.CSSProperties} className="sound-wall-closed sound-wall-closed-right assembly-wall" src="/collection/sound-wall-closed.webp" alt="" width={600} height={600} unoptimized priority />
+        <JourneyFoundPicture transfer />
+        <Image className="route-magnifier" src={eyesRoom.collectionAsset} alt="붉은 점선 길을 따라 십자가를 찾는 돋보기" width={600} height={600} unoptimized priority />
+      </div>}
+      {finalCompletion && <Image ref={flyerRef} className={`transfer-flyer transfer-flyer-${room.key}`} src={room.collectionAsset} alt={`${room.artifactName} 이동 중`} width={room.collectionSize[0]} height={room.collectionSize[1]} priority />}
+      {finalCompletion && <div className="transfer-caption"><span>ALL PARTS FOUND · 5/5</span><strong>기억해 둔 파츠들</strong><small>이제 하나씩 제자리를 찾아갑니다</small></div>}
       <div className="transfer-afterglow">
         <span>{finalCompletion ? "OUR JOURNEY · FIND IT" : `${completedRooms.length}번째 발견`}</span>
         <strong>{finalCompletion ? "너희가 온 마음으로 나를 구하면 나를 찾을 것이요 나를 만나리라" : roomAfterglow[room.key].line}</strong>

@@ -25,7 +25,7 @@ test("participant and themed-room experiences are present", async () => {
   assert.match(home, /journey-board/);
   assert.match(home, /journey-artifact/);
   assert.match(home, /CollectionTransfer/);
-  assert.match(home, /transfer-source-logo/);
+  assert.match(home, /transfer-found-piece/);
   assert.match(home, /transfer-flyer/);
   assert.match(home, /room\.emblem/);
   assert.match(home, /collectionPosition/);
@@ -34,6 +34,15 @@ test("participant and themed-room experiences are present", async () => {
   assert.match(home, /maze-route-segment-\$\{segment\}\.webp/);
   assert.match(home, /JourneyFoundPicture/);
   assert.match(home, /is-gate-opening/);
+  assert.match(home, /is-keepsake/);
+  assert.match(home, /is-assembling/);
+  assert.match(home, /assembly-artifact/);
+  assert.match(home, /안전하게 보관했어요/);
+  assert.match(home, /포스터 반영 완료/);
+  assert.match(home, /journeyComplete \? "collected" : ""/);
+  assert.match(home, /window\.innerWidth - 32/);
+  assert.match(home, /window\.innerHeight - 150/);
+  assert.match(home, /artifactStyle\(soundRoom\)/);
   assert.match(home, /is-route-searching/);
   assert.match(home, /is-route-complete/);
   assert.match(home, /route-magnifier/);
@@ -50,6 +59,12 @@ test("participant and themed-room experiences are present", async () => {
   assert.match(styles, /@keyframes magnifierFollowRoute/);
   assert.match(styles, /animation: magnifierFollowRoute 6\.6s linear both/);
   assert.match(styles, /@keyframes gateRetractLeft/);
+  assert.match(styles, /@keyframes keepsakeAcquire/);
+  assert.match(styles, /@keyframes assembleEyes/);
+  assert.match(styles, /@keyframes assembleSound/);
+  assert.match(styles, /@keyframes assembleBody/);
+  assert.match(styles, /@keyframes assembleHeart/);
+  assert.match(styles, /@keyframes assembleGrace/);
   assert.doesNotMatch(styles, /gateBreakthrough/);
   assert.doesNotMatch(styles, /magnifierSearch/);
   assert.match(styles, /\.transfer-afterglow strong,[\s\S]*word-break: keep-all/);
@@ -156,4 +171,50 @@ test("in-app camera scans a saved team's QR without another name prompt", async 
   assert.match(check, /rooms\.every/);
   assert.match(scanner, /camera-\$\{transition\.action\}/);
   assert.doesNotMatch(home, /jaegunadmin\.html/);
+});
+
+test("map endpoint layers both floors as a room-number directory", async () => {
+  const [page, explorer, styles] = await Promise.all([
+    read("app/map/page.tsx"),
+    read("app/map/map-explorer.tsx"),
+    read("app/map/map.module.css"),
+  ]);
+  assert.match(page, /생활관<br \/>층별 안내/);
+  assert.match(page, /MapExplorer/);
+
+  // Both floors are rendered together as stacked directory plates.
+  assert.match(explorer, /type FloorKey = "1f" \| "2f"/);
+  assert.match(explorer, /\/maps\/directory-1f\.webp/);
+  assert.match(explorer, /\/maps\/directory-2f\.webp/);
+  assert.match(explorer, /data-testid="floor-stack"/);
+  assert.match(explorer, /data-floor=\{item\.key\}/);
+  assert.match(explorer, /data-active=\{active\}/);
+  assert.match(explorer, /setFloorKey/);
+  assert.match(explorer, /aria-pressed=\{active\}/);
+  assert.match(explorer, /disabled=\{!active\}/);
+  assert.match(explorer, /aria-live="polite"/);
+
+  const roomNumbers = [
+    "101", "102", "104", "105", "106", "107", "108", "109",
+    ...Array.from({ length: 21 }, (_, index) => String(index + 201)),
+  ];
+  for (const room of roomNumbers) {
+    assert.match(explorer, new RegExp(`["']${room}["']`));
+  }
+  assert.doesNotMatch(explorer, /["']103["']/);
+  assert.doesNotMatch(explorer, /\d{3}\s*[·~–-]\s*\d{3}/);
+  assert.doesNotMatch(
+    explorer,
+    /소강당|대강당|청춘광장|식당|세미나실|로비|계단|수용|요금|화장실|비품실|파란색/,
+  );
+  assert.doesNotMatch(explorer, /living-center-[12]f\.png/);
+  assert.doesNotMatch(explorer, /viewport\.scrollTo/);
+
+  assert.match(styles, /\.floorStack/);
+  assert.match(styles, /\.floorLayer/);
+  assert.match(styles, /\.activeLayer/);
+  assert.match(styles, /perspective:/);
+  assert.match(styles, /@media \(max-width: 700px\)/);
+  await access(new URL("public/maps/directory-1f.webp", root));
+  await access(new URL("public/maps/directory-2f.webp", root));
 });

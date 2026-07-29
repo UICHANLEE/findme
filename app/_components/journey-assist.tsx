@@ -136,11 +136,11 @@ export default function JourneyAssist({
               </div>
               <p>
                 {selectedRoom.navigation
-                  ? `${selectedRoom.navigation.floor === "1f" ? "1층" : "2층"} ${selectedRoom.location.replace(" · 호수 ???", "")}에서 진행해요.`
-                  : `${selectedRoom.location} · 정확한 위치는 현장 안내를 확인해 주세요.`}
+                  ? `${selectedRoom.navigation.floor === "1f" ? "1층" : "2층"} ${selectedRoom.location}에서 진행해요.`
+                  : "생활관 밖 외부 활동 장소로 이동한 뒤 현장 진행자의 안내를 따라 주세요."}
               </p>
               <Link href={mapHref(selectedRoom.key)}>
-                {selectedRoom.navigation ? `${selectedRoom.location.replace(" · 호수 ???", "")} 지도 보기` : "전체 층별 지도 보기"}
+                {selectedRoom.navigation ? `${selectedRoom.location} 지도 보기` : "외부 이동 안내 보기"}
                 <span aria-hidden="true">↗</span>
               </Link>
               {selectedStatus.isFull ? (

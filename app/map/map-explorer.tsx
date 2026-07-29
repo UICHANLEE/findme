@@ -64,7 +64,7 @@ const participantGuides: Record<RoomKey, ParticipantGuide> = {
       locationId: "small-hall",
       locationLabel: "1층 소강당",
     },
-    message: "호수는 ???이며, 확인된 진행 장소인 1층 소강당을 지도에 표시했어요.",
+    message: "1층 소강당을 지도에 표시했어요.",
   },
   sound: {
     target: {
@@ -76,7 +76,7 @@ const participantGuides: Record<RoomKey, ParticipantGuide> = {
   },
   body: {
     target: null,
-    message: "호수는 ???인 외부 활동이에요. 현장 진행자의 안내를 따라 이동해 주세요.",
+    message: "생활관 밖에서 진행하는 외부 활동이에요. 외부로 이동한 뒤 현장 진행자의 안내를 따라 주세요.",
   },
   heart: {
     target: {

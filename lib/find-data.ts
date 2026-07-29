@@ -7,7 +7,7 @@ export type RoomNavigation = {
 
 export const rooms = [
   {
-    key: "eyes" as const, name: "눈으로 find", short: "눈", location: "소강당 · 호수 ???", color: "#3568e8", soft: "#e8efff", prompt: "눈을 들어, 함께 발견해요", mark: "◉", emblem: "/emblems/eyes.jpg", collectionAsset: "/collection/eyes-piece.webp", collectionSize: [600, 600] as const, collectionPosition: { left: 66, top: -0.7, width: 36, rotate: 0 }, artifactName: "돋보기",
+    key: "eyes" as const, name: "눈으로 find", short: "눈", location: "소강당", color: "#3568e8", soft: "#e8efff", prompt: "눈을 들어, 함께 발견해요", mark: "◉", emblem: "/emblems/eyes.jpg", collectionAsset: "/collection/eyes-piece.webp", collectionSize: [600, 600] as const, collectionPosition: { left: 66, top: -0.7, width: 36, rotate: 0 }, artifactName: "돋보기",
     navigation: { floor: "1f", locationId: "small-hall" } satisfies RoomNavigation,
     hosts: "의정, 하빈", capacity: "2팀 동시 진행", maxTeams: 2, reward: "승리 3 · 패배 1 달란트",
     supplies: ["단어 종이 11장", "꼬깔 15개"],
@@ -21,7 +21,7 @@ export const rooms = [
     steps: ["배속된 노래를 단계별로 맞혀요.", "빠른 노래와 느린 노래를 잘 들어요.", "한 팀씩 차례로 진행해요."],
   },
   {
-    key: "body" as const, name: "몸으로 find", short: "몸", location: "외부 · 호수 ???", color: "#1d9a6c", soft: "#e5f7ef", prompt: "움직이며 하나가 되는 시간", mark: "↗", emblem: "/emblems/body.jpg", collectionAsset: "/collection/body-route.png", collectionSize: [175, 265] as const, collectionPosition: { left: 15, top: 62.8, width: 19.5, rotate: 0 }, artifactName: "점선 경로",
+    key: "body" as const, name: "몸으로 find", short: "몸", location: "외부", color: "#1d9a6c", soft: "#e5f7ef", prompt: "움직이며 하나가 되는 시간", mark: "↗", emblem: "/emblems/body.jpg", collectionAsset: "/collection/body-route.png", collectionSize: [175, 265] as const, collectionPosition: { left: 15, top: 62.8, width: 19.5, rotate: 0 }, artifactName: "점선 경로",
     navigation: null,
     hosts: "중혁, 의찬", capacity: "3팀", maxTeams: 3, reward: "5 달란트",
     supplies: ["Full-text 제비 10장", "어디서 · 누구와 · 무엇을 제비"],

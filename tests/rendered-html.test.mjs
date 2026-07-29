@@ -35,7 +35,7 @@ test("participant and themed-room experiences are present", async () => {
   assert.match(journeyAssist, /from=\$\{encodeURIComponent\(previousRoomKey\)\}/);
   assert.match(journeyAssist, /team=\$\{encodeURIComponent\(teamName\)\}/);
   assert.match(journeyAssist, /selectedRoom\.navigation/);
-  assert.match(journeyAssist, /정확한 위치는 현장 안내를 확인해 주세요/);
+  assert.match(journeyAssist, /생활관 밖 외부 활동 장소로 이동한 뒤/);
   assert.match(home, /moveHeroArt/);
   assert.match(home, /journey-board/);
   assert.match(home, /journey-artifact/);
@@ -102,12 +102,13 @@ test("participant and themed-room experiences are present", async () => {
   assert.match(data, /location: "211호"/);
   assert.match(data, /location: "221호"/);
   assert.match(data, /location: "202호"/);
-  assert.match(data, /location: "소강당 · 호수 \?\?\?"/);
-  assert.match(data, /location: "외부 · 호수 \?\?\?"/);
+  assert.match(data, /location: "소강당"/);
+  assert.match(data, /location: "외부"/);
   assert.match(data, /locationId: "211"/);
   assert.match(data, /locationId: "221"/);
   assert.match(data, /locationId: "202"/);
   assert.doesNotMatch(data, /000호/);
+  assert.doesNotMatch(data, /호수 \?\?\?/);
   for (const name of ["눈으로 find", "소리로 find", "몸으로 find", "마음으로 find", "은혜로 find"]) assert.match(data, new RegExp(name));
 });
 
@@ -251,8 +252,9 @@ test("map endpoint layers rooms and major shared spaces across both floors", asy
   assert.match(explorer, /locationLabel: "2층 211호"/);
   assert.match(explorer, /locationLabel: "2층 221호"/);
   assert.match(explorer, /locationLabel: "2층 202호"/);
+  assert.doesNotMatch(explorer, /호수는 \?\?\?/);
   assert.match(explorer, /방금 나온 방/);
-  assert.match(explorer, /현장 진행자의 안내를 따라 이동해 주세요/);
+  assert.match(explorer, /외부로 이동한 뒤 현장 진행자의 안내를 따라 주세요/);
   assert.match(explorer, /className=\{styles\.mobileFloorSwitcher\}/);
   assert.match(explorer, /type SharedSpaceSpot/);
   assert.match(explorer, /sharedSpaces: SharedSpaceSpot\[\]/);

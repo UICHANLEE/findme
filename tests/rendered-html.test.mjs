@@ -49,8 +49,10 @@ test("participant and themed-room experiences are present", async () => {
   assert.match(home, /room\.emblem/);
   assert.match(home, /collectionPosition/);
   assert.match(home, /collection\/maze-base\.jpg/);
-  assert.match(home, /collection\/maze-final-route\.png/);
+  assert.match(home, /collection\/maze-gate-closed\.webp/);
   assert.match(home, /maze-route-segment-\$\{segment\}\.webp/);
+  assert.match(home, /data-route-segment=\{segment\}/);
+  assert.match(home, /data-testid=\{transfer \? "finale-route" : "completed-route"\}/);
   assert.match(home, /JourneyFoundPicture/);
   assert.match(home, /is-gate-opening/);
   assert.match(home, /is-keepsake/);
@@ -61,7 +63,11 @@ test("participant and themed-room experiences are present", async () => {
   assert.match(home, /journeyComplete \? "collected" : ""/);
   assert.match(home, /window\.innerWidth - 32/);
   assert.match(home, /window\.innerHeight - 150/);
-  assert.match(home, /artifactStyle\(soundRoom\)/);
+  assert.match(home, /data-testid="maze-gate-left"/);
+  assert.match(home, /data-testid="maze-gate-right"/);
+  assert.match(home, /completedCount/);
+  assert.match(home, /setGateOpening\(true\), 9300/);
+  assert.match(home, /setRouteComplete\(true\), 22500/);
   assert.match(home, /is-route-searching/);
   assert.match(home, /is-route-complete/);
   assert.match(home, /route-magnifier/);
@@ -76,15 +82,23 @@ test("participant and themed-room experiences are present", async () => {
   assert.match(home, /duration: 3380/);
   assert.match(home, /길 끝에서 십자가를 만났어요/);
   assert.match(styles, /@keyframes magnifierFollowRoute/);
-  assert.match(styles, /animation: magnifierFollowRoute 6\.6s linear both/);
-  assert.match(styles, /@keyframes gateRetractLeft/);
+  assert.match(styles, /animation: magnifierFollowRoute 9\.6s linear both/);
+  assert.match(styles, /@keyframes gateOpenLeft/);
+  assert.match(styles, /@keyframes gateOpenRight/);
+  assert.match(styles, /is-route-searching \.transfer-poster \.journey-artifact\.artifact-body \{ opacity: 0 !important;/);
+  assert.match(styles, /@keyframes magnifierFound/);
+  assert.match(styles, /is-route-complete \.route-magnifier \{ animation: magnifierFound/);
+  assert.match(styles, /is-route-complete \.transfer-poster \.journey-artifact\.artifact-grace \{ opacity: 1;/);
+  assert.match(styles, /@keyframes routeSegmentIn[\s\S]*filter: saturate\(1\.28\)/);
   assert.match(styles, /@keyframes keepsakeAcquire/);
   assert.match(styles, /@keyframes assembleEyes/);
-  assert.match(styles, /@keyframes assembleSound/);
-  assert.match(styles, /@keyframes assembleBody/);
   assert.match(styles, /@keyframes assembleHeart/);
   assert.match(styles, /@keyframes assembleGrace/);
+  assert.match(styles, /\.journey-complete \.artifact-sound, \.journey-complete \.artifact-body \{ opacity: 0; \}/);
+  assert.match(styles, /@media \(prefers-reduced-motion: reduce\)[\s\S]*\.assembly-wall \{ opacity: 0; \}/);
   assert.doesNotMatch(styles, /gateBreakthrough/);
+  assert.doesNotMatch(styles, /@keyframes gateRetract/);
+  assert.doesNotMatch(styles, /@keyframes bodyRouteThroughGate/);
   assert.doesNotMatch(styles, /magnifierSearch/);
   assert.match(styles, /\.transfer-afterglow strong,[\s\S]*word-break: keep-all/);
   assert.match(styles, /env\(safe-area-inset-bottom\)/);
@@ -172,6 +186,7 @@ test("administrator, QR, persistence, and deployment output are present", async 
   await access(new URL("public/favicon.svg", root));
   await access(new URL("public/collection/maze-base.jpg", root));
   await access(new URL("public/collection/maze-final-route.png", root));
+  await access(new URL("public/collection/maze-gate-closed.webp", root));
   for (let segment = 1; segment <= 5; segment += 1) {
     await access(new URL(`public/collection/maze-route-segment-${segment}.webp`, root));
   }

@@ -17,7 +17,6 @@ import {
 
 type FindRoom = (typeof rooms)[number];
 const routeSegments = [1, 2, 3, 4, 5] as const;
-const soundRoom = rooms.find((room) => room.key === "sound")!;
 const eyesRoom = rooms.find((room) => room.key === "eyes")!;
 const roomAfterglow: Record<RoomKey, { line: string; reference: string }> = {
   eyes: { line: "내 눈을 열어서 주의 율법에서 놀라운 것을 보게 하소서", reference: "시편 119:18" },
@@ -270,12 +269,24 @@ function HomeContent() {
 
 function JourneyFoundPicture({ transfer = false }: { transfer?: boolean }) {
   return (
-    <div className={transfer ? "transfer-final-picture" : "journey-found-picture"} aria-label="열린 미로의 점선 길을 따라 십자가를 찾은 완성 포스터">
-      {transfer ? routeSegments.map((segment) => (
-        <Image key={segment} className={`journey-route-segment route-segment-${segment}`} src={`/collection/maze-route-segment-${segment}.webp`} alt="" width={900} height={900} unoptimized priority />
-      )) : (
-        <Image className="journey-final-route" src="/collection/maze-final-route.png" alt="열린 입구부터 십자가까지 이어지는 원본 포스터의 붉은 점선 길" width={900} height={900} unoptimized priority />
-      )}
+    <div
+      className={transfer ? "transfer-final-picture" : "journey-found-picture"}
+      data-testid={transfer ? "finale-route" : "completed-route"}
+      aria-label="열린 미로의 점선 길을 따라 십자가를 찾은 완성 포스터"
+    >
+      {routeSegments.map((segment) => (
+        <Image
+          key={segment}
+          className={`journey-route-segment route-segment-${segment}`}
+          data-route-segment={segment}
+          src={`/collection/maze-route-segment-${segment}.webp`}
+          alt=""
+          width={900}
+          height={900}
+          unoptimized
+          priority
+        />
+      ))}
     </div>
   );
 }
@@ -295,6 +306,7 @@ function CollectionTransfer({ room, completedRooms, canvasRef, finalCompletion, 
   const posterRef = useRef<HTMLDivElement>(null);
   const targetRef = useRef<HTMLImageElement>(null);
   const flyerRef = useRef<HTMLImageElement>(null);
+  const completedCount = completedRooms.length;
 
   useEffect(() => {
     let flyerAnimation: Animation | null = null;
@@ -387,18 +399,18 @@ function CollectionTransfer({ room, completedRooms, canvasRef, finalCompletion, 
 
       timers.push(window.setTimeout(() => setSettled(true), 3600));
       timers.push(window.setTimeout(() => setAssembling(true), 4300));
-      timers.push(window.setTimeout(() => setGateOpening(true), 8500));
+      timers.push(window.setTimeout(() => setGateOpening(true), 9300));
       timers.push(window.setTimeout(() => {
         setFinalScene(true);
         setRouteSearching(true);
-      }, 10800));
-      timers.push(window.setTimeout(() => setRouteComplete(true), 17400));
-      timers.push(window.setTimeout(() => setAfterglow(true), 18900));
-      timers.push(window.setTimeout(() => setFinished(true), 24200));
+      }, 12800));
+      timers.push(window.setTimeout(() => setRouteComplete(true), 22500));
+      timers.push(window.setTimeout(() => setAfterglow(true), 24700));
+      timers.push(window.setTimeout(() => setFinished(true), 30100));
       timers.push(window.setTimeout(() => {
         setVisible(false);
         onDone();
-      }, 25200));
+      }, 31100));
     };
 
     timers.push(window.setTimeout(prepare, mobile ? 480 : 90));
@@ -406,7 +418,7 @@ function CollectionTransfer({ room, completedRooms, canvasRef, finalCompletion, 
       timers.forEach((timer) => window.clearTimeout(timer));
       flyerAnimation?.cancel();
     };
-  }, [canvasRef, finalCompletion, onDone, room]);
+  }, [canvasRef, completedCount, finalCompletion, onDone, room]);
 
   if (!visible) return null;
   const assemblyRooms = completedRooms
@@ -436,10 +448,30 @@ function CollectionTransfer({ room, completedRooms, canvasRef, finalCompletion, 
           width={item.collectionSize[0]}
           height={item.collectionSize[1]}
         />)}
-        <Image style={{ ...artifactStyle(soundRoom), "--assembly-delay": `${soundAssemblyIndex * 720}ms` } as React.CSSProperties} className="sound-wall-closed sound-wall-closed-left assembly-wall" src="/collection/sound-wall-closed.webp" alt="" width={600} height={600} unoptimized priority />
-        <Image style={{ ...artifactStyle(soundRoom), "--assembly-delay": `${soundAssemblyIndex * 720}ms` } as React.CSSProperties} className="sound-wall-closed sound-wall-closed-right assembly-wall" src="/collection/sound-wall-closed.webp" alt="" width={600} height={600} unoptimized priority />
+        <Image
+          style={{ "--assembly-delay": `${soundAssemblyIndex * 720}ms` } as React.CSSProperties}
+          className="sound-wall-closed sound-wall-closed-left assembly-wall"
+          data-testid="maze-gate-left"
+          src="/collection/maze-gate-closed.webp"
+          alt=""
+          width={900}
+          height={900}
+          unoptimized
+          priority
+        />
+        <Image
+          style={{ "--assembly-delay": `${soundAssemblyIndex * 720}ms` } as React.CSSProperties}
+          className="sound-wall-closed sound-wall-closed-right assembly-wall"
+          data-testid="maze-gate-right"
+          src="/collection/maze-gate-closed.webp"
+          alt=""
+          width={900}
+          height={900}
+          unoptimized
+          priority
+        />
         <JourneyFoundPicture transfer />
-        <Image className="route-magnifier" src={eyesRoom.collectionAsset} alt="붉은 점선 길을 따라 십자가를 찾는 돋보기" width={600} height={600} unoptimized priority />
+        <Image className="route-magnifier" data-testid="route-magnifier" src={eyesRoom.collectionAsset} alt="붉은 점선 길을 따라 십자가를 찾는 돋보기" width={600} height={600} unoptimized priority />
       </div>}
       {finalCompletion && <Image ref={flyerRef} className={`transfer-flyer transfer-flyer-${room.key}`} src={room.collectionAsset} alt={`${room.artifactName} 이동 중`} width={room.collectionSize[0]} height={room.collectionSize[1]} priority />}
       {finalCompletion && <div className="transfer-caption"><span>ALL PARTS FOUND · 5/5</span><strong>기억해 둔 파츠들</strong><small>이제 하나씩 제자리를 찾아갑니다</small></div>}

@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState, type CSSProperties } from "react";
 import {
   rooms,
@@ -35,7 +36,9 @@ export default function JourneyAssist({
   completedRooms,
   roomStatuses,
 }: JourneyAssistProps) {
+  const router = useRouter();
   const [selectedRoomKey, setSelectedRoomKey] = useState<RoomKey | null>(null);
+  const [routingRoomKey, setRoutingRoomKey] = useState<RoomKey | null>(null);
   const previousRoom = rooms.find((room) => room.key === previousRoomKey);
   const selectedRoom = rooms.find((room) => room.key === selectedRoomKey);
   const selectedStatus = selectedRoomKey ? roomStatuses[selectedRoomKey] : null;
@@ -46,6 +49,19 @@ export default function JourneyAssist({
     }&from=${encodeURIComponent(previousRoomKey)}#floor-directory`;
 
   if (!previousRoom) return null;
+
+  const startGuidance = (roomKey: RoomKey) => {
+    const status = roomStatuses[roomKey];
+    setSelectedRoomKey(roomKey);
+
+    if (status.isFull) {
+      window.alert("이 방은 현재 최대 조가 입장 중이에요. 다른 방을 찾아가세요!!");
+      return;
+    }
+
+    setRoutingRoomKey(roomKey);
+    router.push(mapHref(roomKey));
+  };
 
   return (
     <section className="journey-assist-shell" aria-labelledby="journey-assist-title">
@@ -78,9 +94,9 @@ export default function JourneyAssist({
           <div className="journey-planner-heading">
             <div>
               <span className="journey-assist-kicker">CHOOSE YOUR NEXT FIND</span>
-              <h2 id="journey-assist-title">다음 장소는 직접 선택해요</h2>
+              <h2 id="journey-assist-title">가고 싶은 방을 눌러 주세요</h2>
             </div>
-            <p>정해진 순서는 없어요. 미완료 방을 눌러 현황과 길안내를 확인하세요.</p>
+            <p>정해진 순서는 없어요. 방을 누르면 현재 위치부터 점선 길안내가 바로 시작돼요.</p>
           </div>
 
           <div className="journey-live-grid" aria-label="다섯 방 실시간 현황">
@@ -88,6 +104,7 @@ export default function JourneyAssist({
               const status = roomStatuses[room.key];
               const completed = completedRoomKeys.has(room.key);
               const selected = selectedRoomKey === room.key;
+              const routing = routingRoomKey === room.key;
               const availability = completed
                 ? "완료"
                 : status.isFull
@@ -96,20 +113,22 @@ export default function JourneyAssist({
 
               return (
                 <button
-                  className={`journey-live-room ${selected ? "selected" : ""} ${
+                  className={`journey-live-room ${selected ? "selected" : ""} ${routing ? "routing" : ""} ${
                     completed ? "completed" : ""
                   } ${status.isFull && !completed ? "full" : ""}`}
                   style={{ "--accent": room.color, "--soft": room.soft } as CSSProperties}
                   type="button"
                   key={room.key}
-                  onClick={() => setSelectedRoomKey(room.key)}
+                  onClick={() => startGuidance(room.key)}
                   disabled={completed}
                   aria-pressed={selected}
-                  aria-label={`${room.name}, ${completed ? "완료" : "미완료"}, ${availability}`}
+                  aria-label={`${room.name}, ${completed ? "완료" : "미완료"}, ${availability}${
+                    completed ? "" : ", 길안내 시작"
+                  }`}
                 >
                   <span>
                     <i aria-hidden="true" />
-                    {completed ? "완료" : "미완료"}
+                    {routing ? "길안내 여는 중" : completed ? "완료" : "미완료"}
                   </span>
                   <strong>{room.short}</strong>
                   <small>{availability}</small>

@@ -28,9 +28,13 @@ test("participant and themed-room experiences are present", async () => {
   assert.match(home, /myState\.previousRoom/);
   assert.match(home, /teamName=\{myState\.teamName\}/);
   assert.match(journeyAssist, /방금 나온 방/);
-  assert.match(journeyAssist, /다음 장소는 직접 선택해요/);
+  assert.match(journeyAssist, /가고 싶은 방을 눌러 주세요/);
+  assert.match(journeyAssist, /현재 위치부터 점선 길안내가 바로 시작돼요/);
   assert.match(journeyAssist, /status\.availableSlots/);
   assert.match(journeyAssist, /status\.isFull/);
+  assert.match(journeyAssist, /onClick=\{\(\) => startGuidance\(room\.key\)\}/);
+  assert.match(journeyAssist, /router\.push\(mapHref\(roomKey\)\)/);
+  assert.match(journeyAssist, /다른 방을 찾아가세요!!/);
   assert.match(journeyAssist, /guide=\$\{encodeURIComponent\(guide\)\}/);
   assert.match(journeyAssist, /from=\$\{encodeURIComponent\(previousRoomKey\)\}/);
   assert.match(journeyAssist, /team=\$\{encodeURIComponent\(teamName\)\}/);
@@ -248,13 +252,27 @@ test("map endpoint layers rooms and major shared spaces across both floors", asy
   assert.match(explorer, /participantGuides/);
   assert.match(explorer, /guideKey\?: RoomKey/);
   assert.match(explorer, /fromKey\?: RoomKey/);
-  assert.match(explorer, /locationId: "small-hall"/);
-  assert.match(explorer, /locationLabel: "2층 211호"/);
-  assert.match(explorer, /locationLabel: "2층 221호"/);
-  assert.match(explorer, /locationLabel: "2층 202호"/);
+  assert.match(explorer, /createGuideTarget\("1f", "small-hall", "1층 소강당"/);
+  assert.match(explorer, /createGuideTarget\("2f", "211", "2층 211호"/);
+  assert.match(explorer, /createGuideTarget\("2f", "221", "2층 221호"/);
+  assert.match(explorer, /createGuideTarget\("2f", "202", "2층 202호"/);
+  assert.match(explorer, /createGuideTarget\("1f", "outside", "1층 외부 출구"/);
   assert.doesNotMatch(explorer, /호수는 \?\?\?/);
   assert.match(explorer, /방금 나온 방/);
-  assert.match(explorer, /외부로 이동한 뒤 현장 진행자의 안내를 따라 주세요/);
+  assert.match(explorer, /1층 외부 출구까지 안내한 뒤/);
+  assert.match(explorer, /const buildRoutePlan/);
+  assert.match(explorer, /mode: "same-floor"/);
+  assert.match(explorer, /mode: "floor-change"/);
+  assert.match(explorer, /const stairPaths/);
+  assert.match(explorer, /data-testid="map-route"/);
+  assert.match(explorer, /data-route-from=\{fromKey\}/);
+  assert.match(explorer, /data-route-to=\{guideKey\}/);
+  assert.match(explorer, /data-route-mode=\{routePlan\.mode\}/);
+  assert.match(explorer, /data-testid="route-overlay"/);
+  assert.match(explorer, /data-testid="route-path"/);
+  assert.match(explorer, /<animateMotion/);
+  assert.match(explorer, /점선 길안내 다시 보기/);
+  assert.match(explorer, /ROUTE_STAGE_DURATION_MS/);
   assert.match(explorer, /className=\{styles\.mobileFloorSwitcher\}/);
   assert.match(explorer, /type SharedSpaceSpot/);
   assert.match(explorer, /sharedSpaces: SharedSpaceSpot\[\]/);
@@ -293,13 +311,14 @@ test("map endpoint layers rooms and major shared spaces across both floors", asy
     "2층 로비",
     "세미나실 2",
     "양호실",
+    "외부 출구",
   ];
   for (const space of majorSpaces) {
     assert.match(explorer, new RegExp(`["']${space}["']`));
   }
   assert.doesNotMatch(
     explorer,
-    /계단|수용인원|요금|화장실|비품실|파란색/,
+    /수용인원|요금|화장실|비품실|파란색/,
   );
   assert.doesNotMatch(explorer, /living-center-[12]f\.png/);
   assert.doesNotMatch(explorer, /viewport\.scrollTo/);
@@ -310,6 +329,17 @@ test("map endpoint layers rooms and major shared spaces across both floors", asy
   assert.match(styles, /\.sharedSpaceButton/);
   assert.match(styles, /\.sharedSpaceList/);
   assert.match(styles, /\.mobileSelectedLocation/);
+  assert.match(styles, /\.routeLayer\s*\{[^}]*pointer-events:\s*none/);
+  assert.match(styles, /\.routePath\s*\{[^}]*stroke-dasharray:/);
+  assert.match(styles, /\.routeReveal,[\s\S]*\.routePath\s*\{[^}]*stroke-linecap:\s*round/);
+  assert.match(styles, /\.routeReveal\s*\{[^}]*animation:\s*routeReveal 3\.2s/);
+  assert.match(styles, /\.routeStatus/);
+  assert.match(styles, /@keyframes routeReveal/);
+  assert.match(styles, /@keyframes routeMarch/);
+  assert.match(
+    styles,
+    /@media \(prefers-reduced-motion: reduce\)[\s\S]*\.routeReveal/,
+  );
   assert.match(styles, /perspective:/);
   assert.match(styles, /@media \(max-width: 700px\)/);
 

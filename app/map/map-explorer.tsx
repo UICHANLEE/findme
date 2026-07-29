@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { getRoom, type RoomKey } from "../../lib/find-data";
 import styles from "./map.module.css";
 
@@ -44,56 +44,38 @@ type GuideTarget = {
   floor: FloorKey;
   locationId: string;
   locationLabel: string;
+  point: RoutePoint;
+  pathToHub: RoutePoint[];
 };
 
 type ParticipantGuide = {
-  target: GuideTarget | null;
+  target: GuideTarget;
   message: string;
+};
+
+type RoutePoint = {
+  x: number;
+  y: number;
+};
+
+type RouteStage = {
+  floor: FloorKey;
+  points: RoutePoint[];
+  title: string;
+  instruction: string;
+  startLabel: string;
+  endLabel: string;
+};
+
+type RoutePlan = {
+  mode: "same-floor" | "floor-change";
+  stages: RouteStage[];
 };
 
 type MapExplorerProps = {
   teamName?: string;
   guideKey?: RoomKey;
   fromKey?: RoomKey;
-};
-
-const participantGuides: Record<RoomKey, ParticipantGuide> = {
-  eyes: {
-    target: {
-      floor: "1f",
-      locationId: "small-hall",
-      locationLabel: "1층 소강당",
-    },
-    message: "1층 소강당을 지도에 표시했어요.",
-  },
-  sound: {
-    target: {
-      floor: "2f",
-      locationId: "211",
-      locationLabel: "2층 211호",
-    },
-    message: "2층 211호를 지도에 표시했어요.",
-  },
-  body: {
-    target: null,
-    message: "생활관 밖에서 진행하는 외부 활동이에요. 외부로 이동한 뒤 현장 진행자의 안내를 따라 주세요.",
-  },
-  heart: {
-    target: {
-      floor: "2f",
-      locationId: "221",
-      locationLabel: "2층 221호",
-    },
-    message: "2층 221호를 지도에 표시했어요.",
-  },
-  grace: {
-    target: {
-      floor: "2f",
-      locationId: "202",
-      locationLabel: "2층 202호",
-    },
-    message: "2층 202호를 지도에 표시했어요.",
-  },
 };
 
 const floors: Floor[] = [
@@ -156,6 +138,7 @@ const floors: Floor[] = [
       { id: "seminar-1", label: "세미나실 1", x: 80.5, y: 79.5, featured: true },
       { id: "director-office", label: "원장실", x: 62.5, y: 79.5 },
       { id: "office", label: "사무실", x: 72.5, y: 79.5 },
+      { id: "outside", label: "외부 출구", x: 94, y: 52, featured: true },
     ],
   },
 ];
@@ -178,6 +161,249 @@ const getFloorLocations = (floor: Floor): MapLocation[] => [
   })),
 ];
 
+const createGuideTarget = (
+  floor: FloorKey,
+  locationId: string,
+  locationLabel: string,
+  pathToHub: RoutePoint[],
+): GuideTarget => {
+  const location = getFloorLocations(floorByKey[floor]).find(
+    (item) => item.id === locationId,
+  );
+
+  if (!location) {
+    throw new Error(`Unknown map location: ${floor}/${locationId}`);
+  }
+
+  const point = { x: location.x, y: location.y };
+  return {
+    floor,
+    locationId,
+    locationLabel,
+    point,
+    pathToHub: [point, ...pathToHub],
+  };
+};
+
+const routeTargets: Record<RoomKey, GuideTarget> = {
+  eyes: createGuideTarget("1f", "small-hall", "1층 소강당", [
+    { x: 36, y: 66 },
+    { x: 36, y: 52 },
+    { x: 50, y: 52 },
+  ]),
+  sound: createGuideTarget("2f", "211", "2층 211호", [
+    { x: 33.8, y: 34 },
+    { x: 36, y: 34 },
+  ]),
+  body: createGuideTarget("1f", "outside", "1층 외부 출구", [
+    { x: 84, y: 52 },
+    { x: 68, y: 52 },
+    { x: 50, y: 52 },
+  ]),
+  heart: createGuideTarget("2f", "221", "2층 221호", [
+    { x: 29.3, y: 66 },
+    { x: 36, y: 66 },
+    { x: 36, y: 34 },
+  ]),
+  grace: createGuideTarget("2f", "202", "2층 202호", [
+    { x: 80, y: 66 },
+    { x: 68, y: 66 },
+    { x: 68, y: 34 },
+    { x: 36, y: 34 },
+  ]),
+};
+
+const participantGuides: Record<RoomKey, ParticipantGuide> = {
+  eyes: {
+    target: routeTargets.eyes,
+    message: "현재 위치에서 1층 소강당까지 점선을 따라 안내할게요.",
+  },
+  sound: {
+    target: routeTargets.sound,
+    message: "현재 위치에서 2층 211호까지 점선을 따라 안내할게요.",
+  },
+  body: {
+    target: routeTargets.body,
+    message: "1층 외부 출구까지 안내한 뒤, 현장 진행자의 안내를 따라 이동해 주세요.",
+  },
+  heart: {
+    target: routeTargets.heart,
+    message: "현재 위치에서 2층 221호까지 점선을 따라 안내할게요.",
+  },
+  grace: {
+    target: routeTargets.grace,
+    message: "현재 위치에서 2층 202호까지 점선을 따라 안내할게요.",
+  },
+};
+
+const stairPaths: Record<FloorKey, RoutePoint[]> = {
+  "1f": [
+    { x: 50, y: 52 },
+    { x: 36, y: 52 },
+    { x: 36, y: 26 },
+  ],
+  "2f": [
+    { x: 36, y: 34 },
+    { x: 36, y: 26 },
+  ],
+};
+
+const reversePoints = (points: RoutePoint[]) => [...points].reverse();
+
+const buildRoutePlan = (
+  origin: GuideTarget | undefined,
+  destination: GuideTarget | undefined,
+): RoutePlan | null => {
+  if (
+    !origin
+    || !destination
+    || (
+      origin.floor === destination.floor
+      && origin.locationId === destination.locationId
+    )
+  ) {
+    return null;
+  }
+
+  if (origin.floor === destination.floor) {
+    const points = [
+      ...origin.pathToHub,
+      ...reversePoints(destination.pathToHub).slice(1),
+    ];
+
+    return {
+      mode: "same-floor",
+      stages: [{
+        floor: origin.floor,
+        points,
+        title: `${origin.locationLabel} → ${destination.locationLabel}`,
+        instruction: `점선을 따라 ${destination.locationLabel}까지 이동해 주세요.`,
+        startLabel: "현재 위치",
+        endLabel: "목적지",
+      }],
+    };
+  }
+
+  const originStairPath = stairPaths[origin.floor];
+  const destinationStairPath = reversePoints(stairPaths[destination.floor]);
+
+  return {
+    mode: "floor-change",
+    stages: [
+      {
+        floor: origin.floor,
+        points: [
+          ...origin.pathToHub,
+          ...originStairPath.slice(1),
+        ],
+        title: `${origin.locationLabel} → 계단`,
+        instruction: `점선을 따라 ${origin.floor === "1f" ? "1층" : "2층"} 계단까지 이동해 주세요.`,
+        startLabel: "현재 위치",
+        endLabel: "계단",
+      },
+      {
+        floor: destination.floor,
+        points: [
+          ...destinationStairPath,
+          ...reversePoints(destination.pathToHub).slice(1),
+        ],
+        title: `계단 → ${destination.locationLabel}`,
+        instruction: `${destination.floor === "1f" ? "1층" : "2층"}에 도착했어요. 점선을 따라 ${destination.locationLabel}까지 이동해 주세요.`,
+        startLabel: "계단",
+        endLabel: "목적지",
+      },
+    ],
+  };
+};
+
+const routePathData = (points: RoutePoint[]) => points
+  .map((point, index) => `${index === 0 ? "M" : "L"} ${point.x} ${point.y}`)
+  .join(" ");
+
+const markerStyle = (point: RoutePoint) => ({
+  left: `${Math.min(92, Math.max(7, point.x))}%`,
+  top: `${Math.min(91, Math.max(9, point.y))}%`,
+} as CSSProperties);
+
+function RouteOverlay({
+  stage,
+  stageIndex,
+  runId,
+}: {
+  stage: RouteStage;
+  stageIndex: number;
+  runId: number;
+}) {
+  const pathData = routePathData(stage.points);
+  const start = stage.points[0];
+  const end = stage.points.at(-1)!;
+  const maskId = `route-mask-${stage.floor}-${stageIndex}-${runId}`;
+
+  return (
+    <div
+      className={styles.routeLayer}
+      data-testid="route-overlay"
+      data-route-floor={stage.floor}
+      aria-hidden="true"
+    >
+      <svg viewBox="0 0 100 100" preserveAspectRatio="none">
+        <defs>
+          <mask
+            id={maskId}
+            maskUnits="userSpaceOnUse"
+            x="-8"
+            y="-8"
+            width="116"
+            height="116"
+          >
+            <path
+              className={styles.routeReveal}
+              d={pathData}
+              pathLength="1"
+            />
+          </mask>
+        </defs>
+        <path
+          className={styles.routeHalo}
+          d={pathData}
+          mask={`url(#${maskId})`}
+        />
+        <path
+          className={styles.routePath}
+          data-testid="route-path"
+          d={pathData}
+          pathLength="100"
+          mask={`url(#${maskId})`}
+        />
+        <circle className={styles.routeTraveler} r="1.25">
+          <animateMotion
+            begin={stageIndex > 0 ? "0.45s" : "0.15s"}
+            dur="3.2s"
+            fill="freeze"
+            path={pathData}
+          />
+        </circle>
+      </svg>
+      <span
+        className={`${styles.routeMarker} ${styles.routeOrigin}`}
+        style={markerStyle(start)}
+      >
+        <i />
+        {stage.startLabel}
+      </span>
+      <span
+        className={`${styles.routeMarker} ${styles.routeTarget}`}
+        style={markerStyle(end)}
+      >
+        <i />
+        {stage.endLabel}
+      </span>
+    </div>
+  );
+}
+
+const ROUTE_STAGE_DURATION_MS = 3_850;
+
 export default function MapExplorer({
   teamName,
   guideKey,
@@ -187,9 +413,18 @@ export default function MapExplorer({
   const guideRoom = guideKey ? getRoom(guideKey) : undefined;
   const fromRoom = fromKey ? getRoom(fromKey) : undefined;
   const guideTarget = guide?.target ?? null;
-  const [floorKey, setFloorKey] = useState<FloorKey>(
-    guideTarget?.floor ?? "1f",
+  const fromTarget = fromKey ? routeTargets[fromKey] : undefined;
+  const routePlan = useMemo(
+    () => buildRoutePlan(fromTarget, guideTarget ?? undefined),
+    [fromTarget, guideTarget],
   );
+  const initialRouteStage = routePlan?.stages[0];
+  const [floorKey, setFloorKey] = useState<FloorKey>(
+    initialRouteStage?.floor ?? guideTarget?.floor ?? "1f",
+  );
+  const [routeStageIndex, setRouteStageIndex] = useState(0);
+  const [routeRunId, setRouteRunId] = useState(0);
+  const [routeAutoplay, setRouteAutoplay] = useState(true);
   const [selectedByFloor, setSelectedByFloor] = useState<
     Record<FloorKey, string | null>
   >(() => ({
@@ -204,6 +439,7 @@ export default function MapExplorer({
         ? null
         : "201",
   }));
+  const activeRouteStage = routePlan?.stages[routeStageIndex] ?? null;
 
   const activeFloor = floorByKey[floorKey];
   const selectedLocationId = selectedByFloor[floorKey];
@@ -214,11 +450,34 @@ export default function MapExplorer({
     (left, right) => Number(left.number) - Number(right.number),
   );
 
+  useEffect(() => {
+    if (
+      !routePlan
+      || !routeAutoplay
+      || routeStageIndex >= routePlan.stages.length - 1
+    ) {
+      return;
+    }
+
+    const reducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    const timer = window.setTimeout(() => {
+      const nextIndex = routeStageIndex + 1;
+      setRouteStageIndex(nextIndex);
+      setFloorKey(routePlan.stages[nextIndex].floor);
+    }, reducedMotion ? 0 : ROUTE_STAGE_DURATION_MS);
+
+    return () => window.clearTimeout(timer);
+  }, [routeAutoplay, routePlan, routeRunId, routeStageIndex]);
+
   const selectFloor = (nextFloor: FloorKey) => {
+    setRouteAutoplay(false);
     setFloorKey(nextFloor);
   };
 
   const selectLocation = (nextFloor: FloorKey, locationId: string) => {
+    setRouteAutoplay(false);
     setFloorKey(nextFloor);
     setSelectedByFloor((current) => ({
       ...current,
@@ -226,11 +485,29 @@ export default function MapExplorer({
     }));
   };
 
+  const replayGuidance = () => {
+    if (!routePlan) {
+      if (guideTarget) {
+        selectLocation(guideTarget.floor, guideTarget.locationId);
+      }
+      return;
+    }
+
+    setRouteAutoplay(true);
+    setRouteStageIndex(0);
+    setFloorKey(routePlan.stages[0].floor);
+    setRouteRunId((current) => current + 1);
+  };
+
   return (
     <section
       className={styles.explorer}
       id="floor-directory"
       aria-label="생활관 층별 안내"
+      style={guideRoom ? {
+        "--route-accent": guideRoom.color,
+        "--route-soft": guideRoom.soft,
+      } as CSSProperties : undefined}
     >
       {guide && guideRoom && (
         <aside
@@ -248,7 +525,11 @@ export default function MapExplorer({
               {teamName ? `${teamName} · PARTICIPANT GUIDE` : "PARTICIPANT GUIDE"}
             </span>
             <h2 id="participant-guide-title">{guideRoom.name}</h2>
-            <p>{guide.message}</p>
+            <p>
+              {routePlan && fromRoom
+                ? `${fromRoom.name}에서 출발해요. ${guide.message}`
+                : guide.message}
+            </p>
           </div>
           <div className={styles.guideAction}>
             {fromRoom && (
@@ -259,12 +540,9 @@ export default function MapExplorer({
             {guideTarget ? (
               <button
                 type="button"
-                onClick={() => selectLocation(
-                  guideTarget.floor,
-                  guideTarget.locationId,
-                )}
+                onClick={replayGuidance}
               >
-                {guideTarget.locationLabel} 다시 보기
+                {routePlan ? "점선 길안내 다시 보기" : `${guideTarget.locationLabel} 다시 보기`}
               </button>
             ) : (
               <strong>현장 안내를 따라 이동해 주세요</strong>
@@ -299,9 +577,17 @@ export default function MapExplorer({
         <div>
           <span>FLOOR DIRECTORY</span>
           <h2>
-            {guideRoom ? `${guideRoom.name} 위치 안내` : `${activeFloor.label} 공간 안내`}
+            {routePlan && fromRoom && guideRoom
+              ? `${fromRoom.short}에서 ${guideRoom.short}까지`
+              : guideRoom
+                ? `${guideRoom.name} 위치 안내`
+                : `${activeFloor.label} 공간 안내`}
           </h2>
-          <p>층을 바꾸고 호수나 주요 공간을 고르면 지도에 위치가 표시됩니다.</p>
+          <p>
+            {routePlan
+              ? "현재 위치에서 시작하는 붉은 점선을 천천히 따라가세요."
+              : "층을 바꾸고 호수나 주요 공간을 고르면 지도에 위치가 표시됩니다."}
+          </p>
         </div>
         <div className={styles.currentFloor} aria-hidden="true">
           {floorKey === "1f" ? "1F" : "2F"}
@@ -313,6 +599,7 @@ export default function MapExplorer({
           className={styles.floorStack}
           data-testid="floor-stack"
           data-current-floor={floorKey}
+          data-route-mode={routePlan?.mode ?? "none"}
         >
           {floors.map((item) => {
             const active = floorKey === item.key;
@@ -340,6 +627,14 @@ export default function MapExplorer({
                     sizes="(max-width: 700px) calc(100vw - 40px), 92vw"
                     priority
                   />
+                  {active && activeRouteStage?.floor === item.key && (
+                    <RouteOverlay
+                      key={`${routeRunId}-${routeStageIndex}-${item.key}`}
+                      stage={activeRouteStage}
+                      stageIndex={routeStageIndex}
+                      runId={routeRunId}
+                    />
+                  )}
                   <button
                     className={styles.layerSelect}
                     type="button"
@@ -410,6 +705,27 @@ export default function MapExplorer({
               </article>
             );
           })}
+
+          {routePlan && activeRouteStage && (
+            <div
+              className={styles.routeStatus}
+              data-testid="map-route"
+              data-route-from={fromKey}
+              data-route-to={guideKey}
+              data-route-mode={routePlan.mode}
+              data-route-stage={routeStageIndex + 1}
+              role="status"
+              aria-live="polite"
+            >
+              <span>
+                {routePlan.mode === "floor-change"
+                  ? `STEP ${routeStageIndex + 1} / ${routePlan.stages.length}`
+                  : "WALKING ROUTE"}
+              </span>
+              <b>{activeRouteStage.instruction}</b>
+              <small>{activeRouteStage.title}</small>
+            </div>
+          )}
 
           <div
             className={styles.mobileFloorSwitcher}

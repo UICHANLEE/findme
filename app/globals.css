@@ -211,6 +211,9 @@ button { cursor: pointer; }
 .journey-live-room > b { grid-column: 2; grid-row: 2 / 4; align-self: end; color: var(--accent); font: 800 17px/1 var(--font-geist-mono); }
 .journey-live-room > b em { color: #8e8b82; font-size: 8px; font-style: normal; }
 .journey-live-room.selected { border-color: var(--accent); background: var(--soft); box-shadow: 0 0 0 4px color-mix(in srgb,var(--accent) 16%,transparent); transform: translateY(-2px); }
+.journey-live-room.routing { overflow: hidden; }
+.journey-live-room.routing::after { content: ""; position: absolute; left: 8px; right: 8px; bottom: 6px; border-top: 3px dotted var(--accent); animation: journeyRouteOut .65s linear infinite; }
+@keyframes journeyRouteOut { to { transform: translateX(8px); } }
 .journey-live-room.full:not(.completed) { border-color: #c04a38; }
 .journey-live-room.full:not(.completed) > span,
 .journey-live-room.full:not(.completed) > small { color: #a33729; }
@@ -681,6 +684,7 @@ footer b { margin-left: auto; color: #1d9a6c; }
   .experience-entering .experience-copy, .experience-entering .experience-bottom,
   .scan-success.scan-enter, .camera-success.camera-enter { animation: none; }
   .scan-success.scan-exit .scan-orbit, .scan-success.scan-exit .scan-panel,
-  .exit-logo-handoff, .collection-transfer *, .journey-artifact.arriving { animation: none !important; }
+  .exit-logo-handoff, .collection-transfer *, .journey-artifact.arriving,
+  .journey-live-room.routing::after { animation: none !important; }
   .collection-transfer.is-final-scene .transfer-final-picture { opacity: 1; clip-path: none; }
 }

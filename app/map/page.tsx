@@ -65,13 +65,14 @@ export default async function MapPage({ searchParams }: MapPageProps) {
           <h1>생활관<br />층별 안내</h1>
         </div>
         <div className={styles.introCopy}>
-          <strong>찾는 방은 몇 층에 있나요?</strong>
-          <p>백화점 층별 안내처럼 겹쳐진 층판을 누르고, 호수나 주요 공간을 선택하면 위치가 바로 표시돼요.</p>
-          <small>층을 바꾸면 선택한 안내판이 앞으로 올라옵니다.</small>
+          <strong>지금 있는 곳에서 어디로 갈까요?</strong>
+          <p>퇴장 후 선택한 방까지 붉은 점선이 천천히 이어져요. 층이 다르면 가까운 계단을 거쳐 다음 층까지 안내합니다.</p>
+          <small>백화점 길안내처럼 현재 위치부터 점선을 따라가세요.</small>
         </div>
       </section>
 
       <MapExplorer
+        key={`${fromKey ?? "none"}-${guideKey ?? "none"}`}
         teamName={teamName || undefined}
         guideKey={guideKey}
         fromKey={fromKey}

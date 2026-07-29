@@ -6,9 +6,10 @@ const root = new URL("../", import.meta.url);
 const read = (path) => readFile(new URL(path, root), "utf8");
 
 test("participant and themed-room experiences are present", async () => {
-  const [home, room, data, styles] = await Promise.all([
+  const [home, room, journeyAssist, data, styles] = await Promise.all([
     read("app/page.tsx"),
     read("app/room/[slug]/page.tsx"),
+    read("app/_components/journey-assist.tsx"),
     read("lib/find-data.ts"),
     read("app/globals.css"),
   ]);
@@ -21,6 +22,20 @@ test("participant and themed-room experiences are present", async () => {
   assert.match(home, /elapsedRoomLabel/);
   assert.match(home, /selectedRoomKey/);
   assert.match(home, /room-focus/);
+  assert.match(home, /waiting-map-link/);
+  assert.match(home, /JourneyAssist/);
+  assert.match(home, /roomStatuses/);
+  assert.match(home, /myState\.previousRoom/);
+  assert.match(home, /teamName=\{myState\.teamName\}/);
+  assert.match(journeyAssist, /방금 나온 방/);
+  assert.match(journeyAssist, /다음 장소는 직접 선택해요/);
+  assert.match(journeyAssist, /status\.availableSlots/);
+  assert.match(journeyAssist, /status\.isFull/);
+  assert.match(journeyAssist, /guide=\$\{encodeURIComponent\(guide\)\}/);
+  assert.match(journeyAssist, /from=\$\{encodeURIComponent\(previousRoomKey\)\}/);
+  assert.match(journeyAssist, /team=\$\{encodeURIComponent\(teamName\)\}/);
+  assert.match(journeyAssist, /selectedRoom\.navigation/);
+  assert.match(journeyAssist, /정확한 위치는 현장 안내를 확인해 주세요/);
   assert.match(home, /moveHeroArt/);
   assert.match(home, /journey-board/);
   assert.match(home, /journey-artifact/);
@@ -74,15 +89,33 @@ test("participant and themed-room experiences are present", async () => {
   assert.match(data, /left: 19\.9, top: 60\.3, width: 10, rotate: 38/);
   assert.match(room, /퇴장 QR/);
   assert.match(room, /room-threshold/);
+  assert.match(room, /room-map-button/);
+  assert.match(room, /\/map\?team=/);
+  assert.match(room, /completedOnEntryRef/);
   assert.match(room, /journeyComplete/);
   assert.match(room, /finale=1/);
+  assert.match(data, /previousRoom: RoomKey \| null/);
+  assert.match(data, /previousRoomExitedAt: string \| null/);
+  assert.match(data, /previousRoomDurationSeconds: number \| null/);
+  assert.match(data, /type RoomLiveStatus/);
+  assert.match(data, /locationId: "small-hall"/);
+  assert.match(data, /location: "211호"/);
+  assert.match(data, /location: "221호"/);
+  assert.match(data, /location: "202호"/);
+  assert.match(data, /location: "소강당 · 호수 \?\?\?"/);
+  assert.match(data, /location: "외부 · 호수 \?\?\?"/);
+  assert.match(data, /locationId: "211"/);
+  assert.match(data, /locationId: "221"/);
+  assert.match(data, /locationId: "202"/);
+  assert.doesNotMatch(data, /000호/);
   for (const name of ["눈으로 find", "소리로 find", "몸으로 find", "마음으로 find", "은혜로 find"]) assert.match(data, new RegExp(name));
 });
 
 test("administrator, QR, persistence, and deployment output are present", async () => {
-  const [admin, check, logs, talents, reset, store, vercel] = await Promise.all([
+  const [admin, check, status, logs, talents, reset, store, vercel] = await Promise.all([
     read("app/jaegunadmin.html/page.tsx"),
     read("app/api/check/route.ts"),
+    read("app/api/status/route.ts"),
     read("app/api/logs/route.ts"),
     read("app/api/talents/route.ts"),
     read("app/api/reset/route.ts"),
@@ -105,8 +138,18 @@ test("administrator, QR, persistence, and deployment output are present", async 
   assert.match(check, /appendActivityLog/);
   assert.match(check, /teamName/);
   assert.match(check, /completedRooms/);
+  assert.match(check, /ALREADY_IN_ROOM/);
+  assert.match(check, /NOT_IN_ROOM/);
+  assert.match(check, /idempotent: true/);
+  assert.match(check, /previousRoom:/);
+  assert.match(check, /previousRoomExitedAt:/);
+  assert.match(check, /previousRoomDurationSeconds:/);
+  assert.match(check, /state: next/);
   assert.match(check, /collectedRoom/);
   assert.match(check, /journeyComplete/);
+  assert.match(status, /roomStatuses/);
+  assert.match(status, /availableSlots/);
+  assert.match(status, /isFull/);
   assert.match(logs, /getActivityLogs/);
   assert.match(logs, /text\/csv/);
   assert.match(logs, /Content-Disposition/);
@@ -116,6 +159,8 @@ test("administrator, QR, persistence, and deployment output are present", async 
   assert.match(talents, /0~999/);
   assert.match(store, /MAX_LOGS/);
   assert.match(store, /TALENT_KEY/);
+  assert.match(store, /Legacy records deliberately remain unknown/);
+  assert.match(store, /normalizeRoomKey\(state\.previousRoom\)/);
   assert.match(reset, /clearTalentRecords/);
   assert.match(vercel, /"icn1"/);
   await access(new URL(".next/BUILD_ID", root));
@@ -147,6 +192,7 @@ test("in-app camera scans a saved team's QR without another name prompt", async 
   ]);
   assert.match(home, /처음 한 번만/);
   assert.match(home, /href="\/scanner"/);
+  assert.match(home, /if \(queryTeam\) localStorage\.setItem\("find-team", queryTeam\)/);
   assert.match(scanner, /BrowserQRCodeReader/);
   assert.match(scanner, /facingMode/);
   assert.match(scanner, /DecodeHintType\.TRY_HARDER/);
@@ -167,6 +213,8 @@ test("in-app camera scans a saved team's QR without another name prompt", async 
   assert.match(scanner, /data\.collectedRoom/);
   assert.match(scanner, /data\.journeyComplete/);
   assert.match(scan, /data\.journeyComplete/);
+  assert.match(scanner, /&from=\$\{room\.key\}/);
+  assert.match(scan, /&from=\$\{room\.key\}/);
   assert.match(check, /collectedRoom: collectedNow \? room\.key : null/);
   assert.match(check, /rooms\.every/);
   assert.match(scanner, /camera-\$\{transition\.action\}/);
@@ -181,6 +229,11 @@ test("map endpoint layers rooms and major shared spaces across both floors", asy
   ]);
   assert.match(page, /생활관<br \/>층별 안내/);
   assert.match(page, /MapExplorer/);
+  assert.match(page, /searchParams: Promise/);
+  assert.match(page, /query\.guide/);
+  assert.match(page, /query\.from/);
+  assert.match(page, /homeQuery\.set\("team"/);
+  assert.match(page, /homeQuery\.set\("from"/);
 
   // Both floors are rendered together as stacked directory plates.
   assert.match(explorer, /type FloorKey = "1f" \| "2f"/);
@@ -190,6 +243,16 @@ test("map endpoint layers rooms and major shared spaces across both floors", asy
   assert.match(explorer, /data-floor=\{item\.key\}/);
   assert.match(explorer, /data-active=\{active\}/);
   assert.match(explorer, /data-testid="mobile-floor-switcher"/);
+  assert.match(explorer, /id="floor-directory"/);
+  assert.match(explorer, /participantGuides/);
+  assert.match(explorer, /guideKey\?: RoomKey/);
+  assert.match(explorer, /fromKey\?: RoomKey/);
+  assert.match(explorer, /locationId: "small-hall"/);
+  assert.match(explorer, /locationLabel: "2층 211호"/);
+  assert.match(explorer, /locationLabel: "2층 221호"/);
+  assert.match(explorer, /locationLabel: "2층 202호"/);
+  assert.match(explorer, /방금 나온 방/);
+  assert.match(explorer, /현장 진행자의 안내를 따라 이동해 주세요/);
   assert.match(explorer, /className=\{styles\.mobileFloorSwitcher\}/);
   assert.match(explorer, /type SharedSpaceSpot/);
   assert.match(explorer, /sharedSpaces: SharedSpaceSpot\[\]/);
@@ -271,6 +334,10 @@ test("map endpoint layers rooms and major shared spaces across both floors", asy
   assert.match(mobileStyles, /\.floorStack\s*\{[^}]*width:\s*100%/);
   assert.match(mobileStyles, /\.floorStack\s*\{[^}]*min-width:\s*0/);
   assert.match(mobileStyles, /\.roomOverlay\s*\{[^}]*display:\s*none/);
+  assert.match(mobileStyles, /\.layerSelect\s*\{[^}]*display:\s*none/);
+  assert.match(mobileStyles, /\.mobileFloorSwitcher button\s*\{[^}]*min-width:\s*44px/);
+  assert.match(mobileStyles, /\.mobileFloorSwitcher button\s*\{[^}]*min-height:\s*44px/);
+  assert.match(mobileStyles, /\.stackViewport\s*\{[^}]*touch-action:\s*pan-y/);
   assert.doesNotMatch(mobileStyles, /(?:width|min-width):\s*780px/);
 
   await access(new URL("public/maps/directory-1f.webp", root));

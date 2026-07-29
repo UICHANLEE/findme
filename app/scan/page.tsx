@@ -45,7 +45,7 @@ function ScanContent() {
         await new Promise((resolve) => window.setTimeout(resolve, action === "exit" ? 1550 : 1050));
         router.replace(action === "enter"
           ? `/room/${room.key}?team=${encodeURIComponent(savedName)}&welcome=1`
-          : `/?team=${encodeURIComponent(savedName)}${data.collectedRoom ? `&collect=${data.collectedRoom}` : ""}${data.journeyComplete && data.collectedRoom ? "&finale=1" : ""}`);
+          : `/?team=${encodeURIComponent(savedName)}&from=${room.key}${data.collectedRoom ? `&collect=${data.collectedRoom}` : ""}${data.journeyComplete && data.collectedRoom ? "&finale=1" : ""}`);
       } catch (caught) {
         setError(caught instanceof Error ? caught.message : "잠시 후 다시 시도해 주세요.");
       }

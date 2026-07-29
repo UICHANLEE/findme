@@ -142,12 +142,123 @@
   color: white;
 }
 
+.participantGuide {
+  margin-bottom: 30px;
+  padding: 22px 24px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, auto);
+  align-items: center;
+  gap: 28px;
+  border: 3px solid var(--ink);
+  border-radius: 10px 16px 9px 13px;
+  color: var(--ink);
+  background: var(--guide-soft);
+  box-shadow: 9px 10px 0 color-mix(in srgb, var(--guide-accent) 14%, transparent);
+}
+
+.guideCopy,
+.guideAction {
+  min-width: 0;
+}
+
+.guideCopy > span {
+  display: block;
+  color: var(--guide-accent);
+  font: 800 9px/1.5 var(--font-geist-mono);
+  letter-spacing: .15em;
+  overflow-wrap: anywhere;
+}
+
+.guideCopy h2 {
+  max-width: 100%;
+  margin: 6px 0 5px;
+  color: var(--guide-accent);
+  font: 700 clamp(34px, 4vw, 54px)/1.02 var(--font-hand);
+  letter-spacing: -.04em;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+
+.guideCopy p {
+  max-width: 680px;
+  margin: 0;
+  color: #5f5b52;
+  font-size: 12px;
+  line-height: 1.65;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+.guideAction {
+  display: grid;
+  justify-items: end;
+  gap: 10px;
+  text-align: right;
+}
+
+.guideAction small {
+  color: #77746b;
+  font-size: 10px;
+  line-height: 1.45;
+  word-break: keep-all;
+}
+
+.guideAction small b {
+  color: var(--ink);
+}
+
+.guideAction button,
+.guideAction strong {
+  min-height: 44px;
+  padding: 11px 15px 10px;
+  display: inline-grid;
+  place-items: center;
+  border: 2px solid var(--ink);
+  border-radius: 8px 12px 7px 10px;
+  color: white;
+  background: var(--guide-accent);
+  box-shadow: 5px 6px 0 rgba(23, 23, 19, .12);
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.35;
+  word-break: keep-all;
+  text-align: center;
+}
+
+.guideAction button {
+  cursor: pointer;
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.guideAction button:hover {
+  transform: translateY(-2px);
+  box-shadow: 5px 8px 0 rgba(23, 23, 19, .1);
+}
+
+.guideLocated {
+  border-color: var(--ink);
+}
+
+.guideUnresolved {
+  background: var(--paper);
+}
+
+.guideUnresolved .guideAction strong {
+  color: var(--ink);
+  background: var(--poster-yellow);
+}
+
 .mapHeader {
   padding: 46px 0 18px;
   display: flex;
   align-items: end;
   justify-content: space-between;
   gap: 22px;
+}
+
+.mapHeader > div:first-child {
+  min-width: 0;
 }
 
 .mapHeader span,
@@ -162,6 +273,9 @@
   color: var(--poster-blue);
   font: 700 clamp(42px, 5vw, 68px)/1 var(--font-hand);
   letter-spacing: -.05em;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
 }
 
 .mapHeader p {
@@ -487,6 +601,9 @@
   display: block;
   margin-top: 9px;
   font: 700 clamp(32px, 4vw, 52px)/1 var(--font-hand);
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
 }
 
 .selectedRoom p {
@@ -575,6 +692,15 @@
     max-width: 640px;
   }
 
+  .participantGuide {
+    grid-template-columns: 1fr;
+  }
+
+  .guideAction {
+    justify-items: start;
+    text-align: left;
+  }
+
   .roomDirectory {
     grid-template-columns: 1fr;
   }
@@ -608,6 +734,8 @@
   .intro h1 {
     margin-top: 20px;
     font-size: clamp(58px, 19vw, 74px);
+    line-height: .86;
+    overflow: visible;
   }
 
   .introCopy {
@@ -626,17 +754,50 @@
     padding: 26px 20px 76px;
   }
 
+  .participantGuide {
+    margin-bottom: 24px;
+    padding: 18px 17px;
+    gap: 17px;
+    border-width: 2px;
+    box-shadow: 7px 8px 0 color-mix(in srgb, var(--guide-accent) 13%, transparent);
+  }
+
+  .guideCopy h2 {
+    font-size: clamp(31px, 10vw, 42px);
+    line-height: 1.08;
+  }
+
+  .guideCopy p {
+    font-size: 11px;
+    line-height: 1.6;
+  }
+
+  .guideAction {
+    width: 100%;
+  }
+
+  .guideAction button,
+  .guideAction strong {
+    width: 100%;
+    min-height: 44px;
+  }
+
   .floorTabs {
     display: none;
   }
 
   .mapHeader {
     padding: 8px 0 15px;
-    align-items: center;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+    overflow: visible;
   }
 
   .mapHeader h2 {
-    font-size: 38px;
+    max-width: 100%;
+    font-size: clamp(32px, 10.5vw, 40px);
+    line-height: 1.08;
   }
 
   .mapHeader p {
@@ -654,17 +815,20 @@
     border-width: 2px;
     box-shadow: 8px 9px 0 rgba(23, 23, 19, .09);
     touch-action: pan-y;
+    overscroll-behavior-x: none;
   }
 
   .floorStack {
     width: 100%;
     min-width: 0;
     height: clamp(260px, 72vw, 300px);
+    touch-action: pan-y;
   }
 
   .floorLayer {
     left: 2%;
     width: 96%;
+    touch-action: pan-y;
     transition:
       top 520ms cubic-bezier(.2, .74, .18, 1),
       transform 520ms cubic-bezier(.2, .74, .18, 1),
@@ -704,6 +868,16 @@
     display: none;
   }
 
+  .layerSelect {
+    display: none;
+    pointer-events: none;
+  }
+
+  .plateCanvas,
+  .plateImage {
+    touch-action: pan-y;
+  }
+
   .roomOverlay {
     display: none;
   }
@@ -716,6 +890,7 @@
     border-radius: 6px 8px 5px 7px;
     box-shadow: 2px 3px 0 rgba(31, 101, 71, .14);
     font-size: 7px;
+    pointer-events: none;
   }
 
   .sharedSpaceButton[data-featured="false"] {
@@ -763,14 +938,17 @@
   }
 
   .mobileFloorSwitcher button {
-    width: 48px;
-    height: 42px;
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    min-height: 44px;
     padding: 0;
     border: 0;
     border-radius: 6px 9px 5px 8px;
     color: var(--ink);
     background: transparent;
     font: 800 20px/1 var(--font-hand);
+    touch-action: manipulation;
   }
 
   .mobileFloorSwitcher .activeMobileFloor {
@@ -810,7 +988,7 @@
   }
 
   .sharedSpaceList button {
-    min-height: 40px;
+    min-height: 44px;
     padding: 8px 11px 7px;
     font-size: 11px;
   }

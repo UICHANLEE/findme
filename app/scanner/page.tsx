@@ -103,7 +103,7 @@ export default function ScannerPage() {
       await pause(action === "exit" ? 1550 : 1050);
       router.replace(action === "enter"
         ? `/room/${room.key}?team=${encodeURIComponent(confirmedTeam)}&welcome=1`
-        : `/?team=${encodeURIComponent(confirmedTeam)}${data.collectedRoom ? `&collect=${data.collectedRoom}` : ""}${data.journeyComplete && data.collectedRoom ? "&finale=1" : ""}`);
+        : `/?team=${encodeURIComponent(confirmedTeam)}&from=${room.key}${data.collectedRoom ? `&collect=${data.collectedRoom}` : ""}${data.journeyComplete && data.collectedRoom ? "&finale=1" : ""}`);
     } catch (caught) {
       busyRef.current = false;
       setCameraState("error");

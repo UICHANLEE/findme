@@ -1,5 +1,5 @@
 import { getCache } from "@vercel/functions";
-import type { ActivityLog, TalentRecord, TeamState } from "./find-data";
+import { getRoom, type ActivityLog, type RoomKey, type TalentRecord, type TeamState } from "./find-data";
 
 const STATE_KEY = "live-team-states";
 const LOG_KEY = "activity-logs";
@@ -14,7 +14,32 @@ function getFindCache() {
 export async function getTeamStates(): Promise<TeamState[]> {
   const value = await getFindCache().get(STATE_KEY);
   return Array.isArray(value)
-    ? (value as TeamState[]).map((state) => ({ ...state, completedRooms: Array.isArray(state.completedRooms) ? state.completedRooms : [] }))
+    ? (value as Partial<TeamState>[]).map((state) => {
+      const normalizeRoomKey = (candidate: unknown): RoomKey | null => (
+        typeof candidate === "string" && getRoom(candidate) ? candidate as RoomKey : null
+      );
+      const completedRooms = Array.isArray(state.completedRooms)
+        ? Array.from(new Set(state.completedRooms.map(normalizeRoomKey).filter((room): room is RoomKey => room !== null)))
+        : [];
+      const previousRoomDurationSeconds = typeof state.previousRoomDurationSeconds === "number"
+        && Number.isFinite(state.previousRoomDurationSeconds)
+        && state.previousRoomDurationSeconds >= 0
+        ? Math.floor(state.previousRoomDurationSeconds)
+        : null;
+
+      return {
+        ...state,
+        currentRoom: normalizeRoomKey(state.currentRoom),
+        enteredAt: typeof state.enteredAt === "string" ? state.enteredAt : null,
+        updatedAt: typeof state.updatedAt === "string" ? state.updatedAt : null,
+        completedRooms,
+        // Legacy records deliberately remain unknown. A completed room is not
+        // necessarily the room the team most recently exited.
+        previousRoom: normalizeRoomKey(state.previousRoom),
+        previousRoomExitedAt: typeof state.previousRoomExitedAt === "string" ? state.previousRoomExitedAt : null,
+        previousRoomDurationSeconds,
+      } as TeamState;
+    })
     : [];
 }
 

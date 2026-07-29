@@ -4,7 +4,16 @@ import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "rea
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { elapsedRoomLabel, rooms, teamKey, type RoomKey, type TeamState } from "../lib/find-data";
+import JourneyAssist from "./_components/journey-assist";
+import {
+  cleanTeamName,
+  elapsedRoomLabel,
+  rooms,
+  teamKey,
+  type RoomKey,
+  type RoomLiveStatus,
+  type TeamState,
+} from "../lib/find-data";
 
 type FindRoom = (typeof rooms)[number];
 const routeSegments = [1, 2, 3, 4, 5] as const;
@@ -39,6 +48,7 @@ function HomeContent() {
   const [teamName, setTeamName] = useState("");
   const [teamDraft, setTeamDraft] = useState("");
   const [states, setStates] = useState<TeamState[]>([]);
+  const [roomStatuses, setRoomStatuses] = useState<Record<RoomKey, RoomLiveStatus> | null>(null);
   const [ready, setReady] = useState(false);
   const [selectedRoomKey, setSelectedRoomKey] = useState<string | null>(null);
   const [justConnected, setJustConnected] = useState(false);
@@ -46,7 +56,9 @@ function HomeContent() {
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
-      const name = params.get("team") || localStorage.getItem("find-team") || "";
+      const queryTeam = cleanTeamName(params.get("team") || "");
+      const name = queryTeam || cleanTeamName(localStorage.getItem("find-team") || "");
+      if (queryTeam) localStorage.setItem("find-team", queryTeam);
       setTeamName(name);
       setTeamDraft(name);
       setReady(true);
@@ -59,8 +71,12 @@ function HomeContent() {
     const load = async () => {
       try {
         const response = await fetch("/api/status", { cache: "no-store" });
-        const data = await response.json() as { states?: TeamState[] };
+        const data = await response.json() as {
+          states?: TeamState[];
+          roomStatuses?: Record<RoomKey, RoomLiveStatus>;
+        };
         if (active && data.states) setStates(data.states);
+        if (active && data.roomStatuses) setRoomStatuses(data.roomStatuses);
       } catch { /* next poll retries */ }
     };
     load();
@@ -91,6 +107,19 @@ function HomeContent() {
   };
   const searching = states.filter((state) => !state.currentRoom);
   const completedRooms = myState?.completedRooms ?? [];
+  const liveRoomStatuses = useMemo(
+    () => roomStatuses ?? Object.fromEntries(rooms.map((room) => {
+      const insideCount = states.filter((state) => state.currentRoom === room.key).length;
+      return [room.key, {
+        room: room.key,
+        insideCount,
+        maxTeams: room.maxTeams,
+        availableSlots: Math.max(0, room.maxTeams - insideCount),
+        isFull: insideCount >= room.maxTeams,
+      }];
+    })) as Record<RoomKey, RoomLiveStatus>,
+    [roomStatuses, states],
+  );
   const collectParam = params.get("collect") as RoomKey | null;
   const collectingRoom = rooms.find((room) => room.key === collectParam);
   const finalCollection = params.get("finale") === "1";
@@ -151,7 +180,20 @@ function HomeContent() {
               <Link href="/scanner"><span className="camera-icon" aria-hidden="true">SCAN</span><b>QR 스캔하기</b><small>입구·출구 QR을 비춰 주세요</small></Link>
             </div>
           ) : null}
-          {teamName && <div className={`waiting ${myState ? "journey" : ""}`}><span className="pulse" /> {myState ? "방을 찾으러 다니는 중.." : "입장 QR을 스캔하면 여정이 시작돼요"}</div>}
+          {teamName && (
+            <div className={`waiting ${myState ? "journey" : ""}`}>
+              <span className="pulse" />
+              <span>{myState ? "방을 찾으러 다니는 중.." : "입장 QR을 스캔하면 여정이 시작돼요"}</span>
+              <Link
+                className="waiting-map-link"
+                href={`/map?team=${encodeURIComponent(teamName)}${
+                  myState?.previousRoom ? `&from=${encodeURIComponent(myState.previousRoom)}` : ""
+                }#floor-directory`}
+              >
+                층별 지도 <i aria-hidden="true">↗</i>
+              </Link>
+            </div>
+          )}
         </div>
         <div className={`hero-art journey-board ${journeyComplete ? "journey-complete" : ""}`} onPointerMove={moveHeroArt} onPointerLeave={resetHeroArt}>
           <div className="journey-board-heading"><span>{journeyComplete ? "THE WAY IS OPEN · 십자가를 찾았어요" : completedRooms.length ? `FOUND PIECES · ${completedRooms.length}개 보관 중` : "OUR FIND POSTER"}</span><strong>{teamName || "우리 조"}</strong><b>{completedRooms.length}<small> / 5</small></b></div>
@@ -166,6 +208,16 @@ function HomeContent() {
           <div className="artifact-legend">{rooms.map((room) => <span className={completedRooms.includes(room.key) ? "done stored" : ""} key={room.key}><Image src={room.emblem} alt="" width={42} height={42} /><b>{completedRooms.includes(room.key) && !journeyComplete ? "보관 중" : room.artifactName}</b></span>)}</div>
         </div>
       </section>
+
+      {myState && !myState.currentRoom && myState.previousRoom && !journeyComplete ? (
+        <JourneyAssist
+          teamName={myState.teamName}
+          previousRoomKey={myState.previousRoom}
+          previousRoomDurationSeconds={myState.previousRoomDurationSeconds}
+          completedRooms={completedRooms}
+          roomStatuses={liveRoomStatuses}
+        />
+      ) : null}
 
       <section className="room-overview" aria-label="방별 실시간 현황">
         <div className="section-heading"><span>LIVE ROOMS</span><h2>다섯 개의 방을 찾아서</h2><p>눈으로, 소리로, 몸으로, 마음으로, 그리고 은혜로 찾아가요.</p></div>
@@ -252,8 +304,10 @@ function CollectionTransfer({ room, completedRooms, canvasRef, finalCompletion, 
 
     if (!finalCompletion) {
       if (reducedMotion) {
-        setMoving(true);
-        setSettled(true);
+        timers.push(window.setTimeout(() => {
+          setMoving(true);
+          setSettled(true);
+        }, 0));
         timers.push(window.setTimeout(() => {
           setVisible(false);
           onDone();

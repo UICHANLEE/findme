@@ -1,7 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
+import { getRoom, type RoomKey } from "../../lib/find-data";
 import styles from "./map.module.css";
 
 type FloorKey = "1f" | "2f";
@@ -37,6 +38,62 @@ type Floor = {
   height: number;
   rooms: RoomSpot[];
   sharedSpaces: SharedSpaceSpot[];
+};
+
+type GuideTarget = {
+  floor: FloorKey;
+  locationId: string;
+  locationLabel: string;
+};
+
+type ParticipantGuide = {
+  target: GuideTarget | null;
+  message: string;
+};
+
+type MapExplorerProps = {
+  teamName?: string;
+  guideKey?: RoomKey;
+  fromKey?: RoomKey;
+};
+
+const participantGuides: Record<RoomKey, ParticipantGuide> = {
+  eyes: {
+    target: {
+      floor: "1f",
+      locationId: "small-hall",
+      locationLabel: "1층 소강당",
+    },
+    message: "호수는 ???이며, 확인된 진행 장소인 1층 소강당을 지도에 표시했어요.",
+  },
+  sound: {
+    target: {
+      floor: "2f",
+      locationId: "211",
+      locationLabel: "2층 211호",
+    },
+    message: "2층 211호를 지도에 표시했어요.",
+  },
+  body: {
+    target: null,
+    message: "호수는 ???인 외부 활동이에요. 현장 진행자의 안내를 따라 이동해 주세요.",
+  },
+  heart: {
+    target: {
+      floor: "2f",
+      locationId: "221",
+      locationLabel: "2층 221호",
+    },
+    message: "2층 221호를 지도에 표시했어요.",
+  },
+  grace: {
+    target: {
+      floor: "2f",
+      locationId: "202",
+      locationLabel: "2층 202호",
+    },
+    message: "2층 202호를 지도에 표시했어요.",
+  },
 };
 
 const floors: Floor[] = [
@@ -121,12 +178,32 @@ const getFloorLocations = (floor: Floor): MapLocation[] => [
   })),
 ];
 
-export default function MapExplorer() {
-  const [floorKey, setFloorKey] = useState<FloorKey>("1f");
-  const [selectedByFloor, setSelectedByFloor] = useState<Record<FloorKey, string>>({
-    "1f": "104",
-    "2f": "201",
-  });
+export default function MapExplorer({
+  teamName,
+  guideKey,
+  fromKey,
+}: MapExplorerProps) {
+  const guide = guideKey ? participantGuides[guideKey] : null;
+  const guideRoom = guideKey ? getRoom(guideKey) : undefined;
+  const fromRoom = fromKey ? getRoom(fromKey) : undefined;
+  const guideTarget = guide?.target ?? null;
+  const [floorKey, setFloorKey] = useState<FloorKey>(
+    guideTarget?.floor ?? "1f",
+  );
+  const [selectedByFloor, setSelectedByFloor] = useState<
+    Record<FloorKey, string | null>
+  >(() => ({
+    "1f": guideTarget?.floor === "1f"
+      ? guideTarget.locationId
+      : guide
+        ? null
+        : "104",
+    "2f": guideTarget?.floor === "2f"
+      ? guideTarget.locationId
+      : guide
+        ? null
+        : "201",
+  }));
 
   const activeFloor = floorByKey[floorKey];
   const selectedLocationId = selectedByFloor[floorKey];
@@ -150,7 +227,52 @@ export default function MapExplorer() {
   };
 
   return (
-    <section className={styles.explorer} aria-label="생활관 층별 안내">
+    <section
+      className={styles.explorer}
+      id="floor-directory"
+      aria-label="생활관 층별 안내"
+    >
+      {guide && guideRoom && (
+        <aside
+          className={`${styles.participantGuide} ${
+            guideTarget ? styles.guideLocated : styles.guideUnresolved
+          }`}
+          style={{
+            "--guide-accent": guideRoom.color,
+            "--guide-soft": guideRoom.soft,
+          } as CSSProperties}
+          aria-labelledby="participant-guide-title"
+        >
+          <div className={styles.guideCopy}>
+            <span>
+              {teamName ? `${teamName} · PARTICIPANT GUIDE` : "PARTICIPANT GUIDE"}
+            </span>
+            <h2 id="participant-guide-title">{guideRoom.name}</h2>
+            <p>{guide.message}</p>
+          </div>
+          <div className={styles.guideAction}>
+            {fromRoom && (
+              <small>
+                방금 나온 방 <b>{fromRoom.name}</b>
+              </small>
+            )}
+            {guideTarget ? (
+              <button
+                type="button"
+                onClick={() => selectLocation(
+                  guideTarget.floor,
+                  guideTarget.locationId,
+                )}
+              >
+                {guideTarget.locationLabel} 다시 보기
+              </button>
+            ) : (
+              <strong>현장 안내를 따라 이동해 주세요</strong>
+            )}
+          </div>
+        </aside>
+      )}
+
       <div className={styles.floorTabs} aria-label="층 선택">
         {(["1f", "2f"] as FloorKey[]).map((key) => {
           const item = floorByKey[key];
@@ -176,7 +298,9 @@ export default function MapExplorer() {
       <div className={styles.mapHeader}>
         <div>
           <span>FLOOR DIRECTORY</span>
-          <h2>{activeFloor.label} 공간 안내</h2>
+          <h2>
+            {guideRoom ? `${guideRoom.name} 위치 안내` : `${activeFloor.label} 공간 안내`}
+          </h2>
           <p>층을 바꾸고 호수나 주요 공간을 고르면 지도에 위치가 표시됩니다.</p>
         </div>
         <div className={styles.currentFloor} aria-hidden="true">
@@ -315,9 +439,17 @@ export default function MapExplorer() {
         <div className={styles.selectedRoom} aria-live="polite">
           <span>YOU ARE VIEWING</span>
           <strong>
-            {activeFloor.label} · {selectedLocation?.label ?? "위치 선택"}
+            {selectedLocation
+              ? `${activeFloor.label} · ${selectedLocation.label}`
+              : guide && !guideTarget
+                ? "현장 안내가 필요한 장소"
+                : `${activeFloor.label} · 위치 선택`}
           </strong>
-          <p>선택한 호수와 주요 공간이 안내도 위에 진하게 표시됩니다.</p>
+          <p>
+            {guide && !guideTarget
+              ? guide.message
+              : "선택한 호수와 주요 공간이 안내도 위에 진하게 표시됩니다."}
+          </p>
         </div>
         <div className={styles.directoryLists}>
           <section className={styles.directorySection}>

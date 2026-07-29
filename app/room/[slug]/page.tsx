@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -20,8 +20,10 @@ function RoomContent() {
   const teamId = teamKey(teamName);
   const [enteredAt, setEnteredAt] = useState<string | null>(null);
   const [seconds, setSeconds] = useState(0);
+  const completedOnEntryRef = useRef<boolean | null>(null);
 
   useEffect(() => {
+    completedOnEntryRef.current = null;
     if (teamName) localStorage.setItem("find-team", teamName);
     let active = true;
     const load = async () => {
@@ -30,10 +32,14 @@ function RoomContent() {
         const data = await response.json() as { states?: TeamState[] };
         const state = data.states?.find((item) => item.teamId === teamId);
         if (!active || !state) return;
+        if (state.currentRoom === params.slug && completedOnEntryRef.current === null) {
+          completedOnEntryRef.current = state.completedRooms?.includes(room?.key ?? "eyes") ?? false;
+        }
         if (state.currentRoom !== params.slug) {
-          const collected = state.completedRooms?.includes(room?.key ?? "eyes");
+          const collected = completedOnEntryRef.current === false
+            && state.completedRooms?.includes(room?.key ?? "eyes");
           const journeyComplete = rooms.every((item) => state.completedRooms?.includes(item.key));
-          router.replace(`/?team=${encodeURIComponent(state.teamName)}${collected && room ? `&collect=${room.key}` : ""}${collected && journeyComplete ? "&finale=1" : ""}`);
+          router.replace(`/?team=${encodeURIComponent(state.teamName)}${room ? `&from=${room.key}` : ""}${collected && room ? `&collect=${room.key}` : ""}${collected && journeyComplete ? "&finale=1" : ""}`);
         }
         setEnteredAt(state.enteredAt);
       } catch { /* next poll retries */ }
@@ -54,7 +60,7 @@ function RoomContent() {
   return (
     <main className={`experience experience-${room.key} ${isEntering ? "experience-entering" : ""}`} style={{ "--accent": room.color, "--soft": room.soft } as React.CSSProperties}>
       {isEntering && <div className="room-threshold" aria-hidden="true"><span>{room.name}<small>우리 조가 입장합니다</small></span></div>}
-      <header><Link className="experience-wordmark" href={`/?team=${encodeURIComponent(teamName)}`}><Image src="/find-it-mark.jpg" alt="" width={42} height={42} />FIND <span>IT</span></Link><div className="room-header-actions"><Link className="room-scan-button" href="/scanner">▣ QR 스캔</Link><div className="live-badge"><i /> LIVE</div></div></header>
+      <header><Link className="experience-wordmark" href={`/?team=${encodeURIComponent(teamName)}`}><Image src="/find-it-mark.jpg" alt="" width={42} height={42} />FIND <span>IT</span></Link><div className="room-header-actions"><Link className="room-scan-button room-map-button" href={`/map?team=${encodeURIComponent(teamName)}&guide=${room.key}`}>⌖ 지도</Link><Link className="room-scan-button" href="/scanner">▣ QR 스캔</Link><div className="live-badge"><i /> LIVE</div></div></header>
       <div className="experience-mark" aria-hidden="true"><Image src={room.emblem} alt="" width={640} height={640} priority /></div>
       <section className="experience-copy">
         <div className="room-location">ROOM {roomsIndex(room.key)} · {room.location}</div>

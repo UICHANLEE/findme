@@ -270,7 +270,12 @@ test("map endpoint layers rooms and major shared spaces across both floors", asy
   assert.match(explorer, /data-route-mode=\{routePlan\.mode\}/);
   assert.match(explorer, /data-testid="route-overlay"/);
   assert.match(explorer, /data-testid="route-path"/);
-  assert.match(explorer, /<animateMotion/);
+  assert.doesNotMatch(explorer, /<animateMotion/);
+  assert.match(explorer, /className=\{styles\.routeBasePath\}/);
+  assert.match(explorer, /"--route-delay": `\$\{stageDelaySeconds\}s`/);
+  assert.match(explorer, /"--route-duration": "3\.4s"/);
+  assert.match(explorer, /const routeDestinationId/);
+  assert.match(explorer, /styles\.routeDestinationLocation/);
   assert.match(explorer, /점선 길안내 다시 보기/);
   assert.match(explorer, /ROUTE_STAGE_DURATION_MS/);
   assert.match(explorer, /className=\{styles\.mobileFloorSwitcher\}/);
@@ -278,7 +283,7 @@ test("map endpoint layers rooms and major shared spaces across both floors", asy
   assert.match(explorer, /sharedSpaces: SharedSpaceSpot\[\]/);
   assert.match(explorer, /const getFloorLocations/);
   assert.match(explorer, /const selectedSpot = getFloorLocations\(item\)\.find/);
-  assert.match(explorer, /\{active && selectedSpot\?\.kind === "room" && \(/);
+  assert.match(explorer, /\{active && !routePlan && selectedSpot\?\.kind === "room" && \(/);
   assert.match(explorer, /data-testid="mobile-selected-location"/);
   assert.match(explorer, /data-location=\{selectedSpot\.id\}/);
   assert.match(explorer, /item\.sharedSpaces\.map\(\(space\)/);
@@ -331,11 +336,19 @@ test("map endpoint layers rooms and major shared spaces across both floors", asy
   assert.match(styles, /\.mobileSelectedLocation/);
   assert.match(styles, /\.routeLayer\s*\{[^}]*pointer-events:\s*none/);
   assert.match(styles, /\.routePath\s*\{[^}]*stroke-dasharray:/);
-  assert.match(styles, /\.routeReveal,[\s\S]*\.routePath\s*\{[^}]*stroke-linecap:\s*round/);
-  assert.match(styles, /\.routeReveal\s*\{[^}]*animation:\s*routeReveal 3\.2s/);
+  assert.match(styles, /\.routeBasePath,[\s\S]*\.routePath\s*\{[^}]*stroke-linecap:\s*round/);
+  assert.match(
+    styles,
+    /\.routeReveal\s*\{[^}]*animation:[\s\S]*routeReveal var\(--route-duration, 3\.4s\)[\s\S]*cubic-bezier\(\.4, 0, \.2, 1\) forwards/,
+  );
+  assert.match(styles, /\.routeLayer svg\s*\{[^}]*z-index:\s*3/);
+  assert.match(styles, /\.sharedSpaceOverlay\s*\{[^}]*z-index:\s*5/);
+  assert.match(styles, /\.roomOverlay\s*\{[^}]*z-index:\s*6/);
+  assert.match(styles, /\.routeMarker\s*\{[^}]*z-index:\s*7/);
+  assert.match(styles, /\.routeDestinationLocation\s*\{[^}]*opacity:\s*0/);
   assert.match(styles, /\.routeStatus/);
   assert.match(styles, /@keyframes routeReveal/);
-  assert.match(styles, /@keyframes routeMarch/);
+  assert.doesNotMatch(styles, /@keyframes routeMarch/);
   assert.match(
     styles,
     /@media \(prefers-reduced-motion: reduce\)[\s\S]*\.routeReveal/,

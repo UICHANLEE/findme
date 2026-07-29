@@ -189,7 +189,6 @@ const routeTargets: Record<RoomKey, GuideTarget> = {
   eyes: createGuideTarget("1f", "small-hall", "1층 소강당", [
     { x: 36, y: 66 },
     { x: 36, y: 52 },
-    { x: 50, y: 52 },
   ]),
   sound: createGuideTarget("2f", "211", "2층 211호", [
     { x: 33.8, y: 34 },
@@ -199,6 +198,7 @@ const routeTargets: Record<RoomKey, GuideTarget> = {
     { x: 84, y: 52 },
     { x: 68, y: 52 },
     { x: 50, y: 52 },
+    { x: 36, y: 52 },
   ]),
   heart: createGuideTarget("2f", "221", "2층 221호", [
     { x: 29.3, y: 66 },
@@ -238,7 +238,6 @@ const participantGuides: Record<RoomKey, ParticipantGuide> = {
 
 const stairPaths: Record<FloorKey, RoutePoint[]> = {
   "1f": [
-    { x: 50, y: 52 },
     { x: 36, y: 52 },
     { x: 36, y: 26 },
   ],
@@ -279,7 +278,7 @@ const buildRoutePlan = (
         title: `${origin.locationLabel} → ${destination.locationLabel}`,
         instruction: `점선을 따라 ${destination.locationLabel}까지 이동해 주세요.`,
         startLabel: "현재 위치",
-        endLabel: "목적지",
+        endLabel: destination.locationLabel,
       }],
     };
   }
@@ -310,15 +309,65 @@ const buildRoutePlan = (
         title: `계단 → ${destination.locationLabel}`,
         instruction: `${destination.floor === "1f" ? "1층" : "2층"}에 도착했어요. 점선을 따라 ${destination.locationLabel}까지 이동해 주세요.`,
         startLabel: "계단",
-        endLabel: "목적지",
+        endLabel: destination.locationLabel,
       },
     ],
   };
 };
 
-const routePathData = (points: RoutePoint[]) => points
-  .map((point, index) => `${index === 0 ? "M" : "L"} ${point.x} ${point.y}`)
-  .join(" ");
+const routePathData = (points: RoutePoint[], floor: Floor) => {
+  const scaled = points.map((point) => ({
+    x: (point.x / 100) * floor.width,
+    y: (point.y / 100) * floor.height,
+  }));
+
+  if (scaled.length < 2) {
+    return "";
+  }
+
+  const commands = [`M ${scaled[0].x} ${scaled[0].y}`];
+
+  for (let index = 1; index < scaled.length - 1; index += 1) {
+    const previous = scaled[index - 1];
+    const current = scaled[index];
+    const next = scaled[index + 1];
+    const incomingDistance = Math.hypot(
+      current.x - previous.x,
+      current.y - previous.y,
+    );
+    const outgoingDistance = Math.hypot(
+      next.x - current.x,
+      next.y - current.y,
+    );
+
+    if (incomingDistance === 0 || outgoingDistance === 0) {
+      continue;
+    }
+
+    const radius = Math.min(
+      28,
+      incomingDistance * 0.18,
+      outgoingDistance * 0.18,
+    );
+    const before = {
+      x: current.x - ((current.x - previous.x) / incomingDistance) * radius,
+      y: current.y - ((current.y - previous.y) / incomingDistance) * radius,
+    };
+    const after = {
+      x: current.x + ((next.x - current.x) / outgoingDistance) * radius,
+      y: current.y + ((next.y - current.y) / outgoingDistance) * radius,
+    };
+
+    commands.push(
+      `L ${before.x} ${before.y}`,
+      `Q ${current.x} ${current.y} ${after.x} ${after.y}`,
+    );
+  }
+
+  const end = scaled.at(-1)!;
+  commands.push(`L ${end.x} ${end.y}`);
+  return commands.join(" ");
+};
 
 const markerStyle = (point: RoutePoint) => ({
   left: `${Math.min(92, Math.max(7, point.x))}%`,
@@ -334,27 +383,36 @@ function RouteOverlay({
   stageIndex: number;
   runId: number;
 }) {
-  const pathData = routePathData(stage.points);
+  const floor = floorByKey[stage.floor];
+  const pathData = routePathData(stage.points, floor);
   const start = stage.points[0];
   const end = stage.points.at(-1)!;
   const maskId = `route-mask-${stage.floor}-${stageIndex}-${runId}`;
+  const stageDelaySeconds = stageIndex > 0 ? 0.68 : 0.12;
 
   return (
     <div
       className={styles.routeLayer}
       data-testid="route-overlay"
       data-route-floor={stage.floor}
+      style={{
+        "--route-delay": `${stageDelaySeconds}s`,
+        "--route-duration": "3.4s",
+      } as CSSProperties}
       aria-hidden="true"
     >
-      <svg viewBox="0 0 100 100" preserveAspectRatio="none">
+      <svg
+        viewBox={`0 0 ${floor.width} ${floor.height}`}
+        preserveAspectRatio="none"
+      >
         <defs>
           <mask
             id={maskId}
             maskUnits="userSpaceOnUse"
-            x="-8"
-            y="-8"
-            width="116"
-            height="116"
+            x={-floor.width * 0.05}
+            y={-floor.height * 0.05}
+            width={floor.width * 1.1}
+            height={floor.height * 1.1}
           >
             <path
               className={styles.routeReveal}
@@ -364,6 +422,10 @@ function RouteOverlay({
           </mask>
         </defs>
         <path
+          className={styles.routeBasePath}
+          d={pathData}
+        />
+        <path
           className={styles.routeHalo}
           d={pathData}
           mask={`url(#${maskId})`}
@@ -372,17 +434,8 @@ function RouteOverlay({
           className={styles.routePath}
           data-testid="route-path"
           d={pathData}
-          pathLength="100"
           mask={`url(#${maskId})`}
         />
-        <circle className={styles.routeTraveler} r="1.25">
-          <animateMotion
-            begin={stageIndex > 0 ? "0.45s" : "0.15s"}
-            dur="3.2s"
-            fill="freeze"
-            path={pathData}
-          />
-        </circle>
       </svg>
       <span
         className={`${styles.routeMarker} ${styles.routeOrigin}`}
@@ -402,7 +455,7 @@ function RouteOverlay({
   );
 }
 
-const ROUTE_STAGE_DURATION_MS = 3_850;
+const ROUTE_STAGE_DURATION_MS = 4_900;
 
 export default function MapExplorer({
   teamName,
@@ -604,6 +657,9 @@ export default function MapExplorer({
           {floors.map((item) => {
             const active = floorKey === item.key;
             const selected = selectedByFloor[item.key];
+            const routeDestinationId = routePlan && guideTarget?.floor === item.key
+              ? guideTarget.locationId
+              : null;
             const selectedSpot = getFloorLocations(item).find(
               (location) => location.id === selected,
             );
@@ -652,6 +708,10 @@ export default function MapExplorer({
                       <button
                         className={`${styles.roomButton} ${
                           selected === room.number ? styles.activeRoom : ""
+                        } ${
+                          routeDestinationId === room.number
+                            ? styles.routeDestinationLocation
+                            : ""
                         }`}
                         style={{ left: `${room.x}%`, top: `${room.y}%` }}
                         type="button"
@@ -675,6 +735,10 @@ export default function MapExplorer({
                         <button
                           className={`${styles.sharedSpaceButton} ${
                             selected === space.id ? styles.activeSpace : ""
+                          } ${
+                            routeDestinationId === space.id
+                              ? styles.routeDestinationLocation
+                              : ""
                           }`}
                           style={{ left: `${space.x}%`, top: `${space.y}%` }}
                           type="button"
@@ -690,7 +754,7 @@ export default function MapExplorer({
                       ))}
                     </div>
                   )}
-                  {active && selectedSpot?.kind === "room" && (
+                  {active && !routePlan && selectedSpot?.kind === "room" && (
                     <span
                       className={styles.mobileSelectedLocation}
                       style={{ left: `${selectedSpot.x}%`, top: `${selectedSpot.y}%` }}

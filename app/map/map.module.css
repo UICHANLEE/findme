@@ -1232,6 +1232,224 @@
   }
 }
 
+@media (orientation: landscape) and (max-height: 560px) {
+  .shell[data-map-mode="standalone"] .topbar {
+    height: 54px;
+    padding:
+      0 max(18px, env(safe-area-inset-right))
+      0 max(18px, env(safe-area-inset-left));
+    border-bottom-width: 2px;
+  }
+
+  .shell[data-map-mode="standalone"] .topbar :global(.wordmark) {
+    gap: 7px;
+    font-size: 16px;
+  }
+
+  .shell[data-map-mode="standalone"] .topbar :global(.wordmark) img {
+    width: 38px;
+    height: 38px;
+  }
+
+  .shell[data-map-mode="standalone"] .headerMeta span {
+    display: block;
+    font-size: 8px;
+  }
+
+  .shell[data-map-mode="standalone"] .intro {
+    min-height: 0;
+    padding:
+      8px max(22px, env(safe-area-inset-right))
+      9px max(22px, env(safe-area-inset-left));
+    grid-template-columns: 1fr;
+    align-items: center;
+    gap: 0;
+    border-bottom-width: 2px;
+  }
+
+  .shell[data-map-mode="standalone"] .eyebrow {
+    display: none;
+  }
+
+  .shell[data-map-mode="standalone"] .intro h1 {
+    margin: 0;
+    font-size: clamp(30px, 4.2vw, 36px);
+    line-height: 1;
+    letter-spacing: -.05em;
+  }
+
+  .shell[data-map-mode="standalone"] .intro h1 br {
+    display: none;
+  }
+
+  .shell[data-map-mode="standalone"] .introCopy {
+    display: none;
+  }
+
+  .shell[data-map-mode="standalone"] .explorer {
+    padding:
+      10px max(18px, env(safe-area-inset-right))
+      34px max(18px, env(safe-area-inset-left));
+  }
+
+  .shell[data-map-mode="standalone"] .floorTabs {
+    display: none;
+  }
+
+  .shell[data-map-mode="standalone"] .mapHeader {
+    display: none;
+  }
+
+  .shell[data-map-mode="standalone"] .currentFloor {
+    display: none;
+  }
+
+  .shell[data-map-mode="standalone"] .stackViewport {
+    position: relative;
+    overflow: hidden;
+    border-width: 2px;
+    box-shadow: 7px 8px 0 rgba(23, 23, 19, .09);
+    touch-action: pan-y pinch-zoom;
+  }
+
+  .shell[data-map-mode="standalone"] .floorStack {
+    width: 100%;
+    min-width: 0;
+    height: clamp(250px, calc(100svh - 120px), 330px);
+  }
+
+  .shell[data-map-mode="standalone"] .floorLayer {
+    top: 50% !important;
+    left: 2%;
+    width: 96%;
+  }
+
+  .shell[data-map-mode="standalone"] .activeLayer {
+    opacity: 1;
+    filter: drop-shadow(0 15px 12px rgba(24, 29, 46, .22));
+    transform: translateY(-50%) scale(1.01);
+  }
+
+  .shell[data-map-mode="standalone"] .inactiveLayer {
+    opacity: .15;
+    filter: saturate(.58) drop-shadow(0 8px 9px rgba(24, 29, 46, .1));
+    transform: translateY(calc(-50% - 14px)) scale(.97);
+  }
+
+  .shell[data-map-mode="standalone"] .floorRail {
+    display: none;
+  }
+
+  .shell[data-map-mode="standalone"] .layerSelect {
+    display: none;
+    pointer-events: none;
+  }
+
+  .shell[data-map-mode="standalone"] .roomOverlay {
+    display: none;
+  }
+
+  .shell[data-map-mode="standalone"] .mobileSelectedLocation {
+    position: absolute;
+    z-index: 7;
+    min-width: 44px;
+    min-height: 29px;
+    padding: 4px 7px 3px;
+    display: grid;
+    place-items: center;
+    border: 2px solid var(--poster-blue);
+    border-radius: 7px 10px 6px 9px;
+    color: white;
+    background: var(--poster-blue);
+    box-shadow:
+      3px 4px 0 rgba(25, 63, 174, .22),
+      0 0 0 5px rgba(237, 176, 26, .42);
+    font: 800 10px/1 var(--font-geist-mono);
+    transform: translate(-50%, -50%);
+  }
+
+  .shell[data-map-mode="standalone"] .mobileFloorSwitcher {
+    position: absolute;
+    right: max(10px, env(safe-area-inset-right));
+    bottom: max(10px, env(safe-area-inset-bottom));
+    z-index: 10;
+    padding: 4px;
+    display: flex;
+    gap: 4px;
+    border: 2px solid var(--ink);
+    border-radius: 9px 12px 8px 10px;
+    background: rgba(246, 240, 229, .96);
+    box-shadow: 4px 5px 0 rgba(23, 23, 19, .14);
+  }
+
+  .shell[data-map-mode="standalone"] .mobileFloorSwitcher button {
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    min-height: 44px;
+    padding: 0;
+    border: 0;
+    border-radius: 6px 9px 5px 8px;
+    color: var(--ink);
+    background: transparent;
+    font: 800 20px/1 var(--font-hand);
+    touch-action: manipulation;
+  }
+
+  .shell[data-map-mode="standalone"] .mobileFloorSwitcher .activeMobileFloor {
+    color: white;
+    background: var(--poster-blue);
+  }
+
+  .shell[data-map-mode="standalone"] .roomDirectory {
+    margin-top: 16px;
+    grid-template-columns: minmax(210px, .55fr) minmax(0, 1.45fr);
+    gap: 14px;
+  }
+
+  .shell[data-map-mode="standalone"] .selectedRoom {
+    min-height: 122px;
+    padding: 17px 19px;
+  }
+
+  .shell[data-map-mode="standalone"] .selectedRoom strong {
+    font-size: clamp(27px, 4vw, 36px);
+  }
+
+  .shell[data-map-mode="standalone"] .directoryLists {
+    gap: 12px;
+  }
+
+  .shell[data-map-mode="standalone"] .directoryHeading {
+    min-height: 28px;
+    padding-bottom: 5px;
+  }
+
+  .shell[data-map-mode="standalone"] .sharedSpaceList {
+    padding-top: 7px;
+    gap: 5px;
+  }
+
+  .shell[data-map-mode="standalone"] .sharedSpaceList button {
+    min-height: 38px;
+    padding: 7px 9px 6px;
+    font-size: 10px;
+  }
+
+  .shell[data-map-mode="standalone"] .roomList button {
+    min-height: 44px;
+    padding: 7px 5px 6px;
+    font-size: 16px;
+  }
+
+  .shell[data-map-mode="standalone"] .footer {
+    min-height: 52px;
+    padding:
+      12px max(18px, env(safe-area-inset-right))
+      12px max(18px, env(safe-area-inset-left));
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .floorLayer,
   .roomButton,

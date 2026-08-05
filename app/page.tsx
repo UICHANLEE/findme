@@ -186,7 +186,7 @@ function HomeContent() {
               <span>{myState ? "방을 찾으러 다니는 중.." : "입장 QR을 스캔하면 여정이 시작돼요"}</span>
               <Link
                 className="waiting-map-link"
-                href={`/map?team=${encodeURIComponent(teamName)}${
+                href={`/map2?team=${encodeURIComponent(teamName)}${
                   myState?.previousRoom ? `&from=${encodeURIComponent(myState.previousRoom)}` : ""
                 }#floor-directory`}
               >

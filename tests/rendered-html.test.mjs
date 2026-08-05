@@ -24,6 +24,8 @@ test("participant and themed-room experiences are present", async () => {
   assert.match(home, /selectedRoomKey/);
   assert.match(home, /room-focus/);
   assert.match(home, /waiting-map-link/);
+  assert.match(home, /\/map2\?team=/);
+  assert.doesNotMatch(home, /\/map\?team=/);
   assert.match(home, /JourneyAssist/);
   assert.match(home, /roomStatuses/);
   assert.match(home, /myState\.previousRoom/);
@@ -39,6 +41,8 @@ test("participant and themed-room experiences are present", async () => {
   assert.match(journeyAssist, /guide=\$\{encodeURIComponent\(guide\)\}/);
   assert.match(journeyAssist, /from=\$\{encodeURIComponent\(previousRoomKey\)\}/);
   assert.match(journeyAssist, /team=\$\{encodeURIComponent\(teamName\)\}/);
+  assert.match(journeyAssist, /`\/map2\?team=/);
+  assert.doesNotMatch(journeyAssist, /`\/map\?team=/);
   assert.match(journeyAssist, /selectedRoom\.navigation/);
   assert.match(journeyAssist, /생활관 밖 외부 활동 장소로 이동한 뒤/);
   assert.match(home, /moveHeroArt/);
@@ -109,7 +113,8 @@ test("participant and themed-room experiences are present", async () => {
   assert.match(room, /퇴장 QR/);
   assert.match(room, /room-threshold/);
   assert.match(room, /room-map-button/);
-  assert.match(room, /\/map\?team=/);
+  assert.match(room, /\/map2\?team=/);
+  assert.doesNotMatch(room, /\/map\?team=/);
   assert.match(room, /completedOnEntryRef/);
   assert.match(room, /window\.setTimeout\(load, 2000\)/);
   assert.match(room, /setInterval\(update, 1000\)/);
@@ -257,18 +262,27 @@ test("in-app camera scans a saved team's QR without another name prompt", async 
 });
 
 test("map endpoint layers rooms and major shared spaces across both floors", async () => {
-  const [page, explorer, styles] = await Promise.all([
+  const [page, journeyPage, screen, explorer, styles] = await Promise.all([
     read("app/map/page.tsx"),
+    read("app/map2/page.tsx"),
+    read("app/map/map-screen.tsx"),
     read("app/map/map-explorer.tsx"),
     read("app/map/map.module.css"),
   ]);
-  assert.match(page, /생활관<br \/>층별 안내/);
-  assert.match(page, /MapExplorer/);
-  assert.match(page, /searchParams: Promise/);
-  assert.match(page, /query\.guide/);
-  assert.match(page, /query\.from/);
-  assert.match(page, /homeQuery\.set\("team"/);
-  assert.match(page, /homeQuery\.set\("from"/);
+  assert.match(page, /<MapScreen \/>/);
+  assert.doesNotMatch(page, /searchParams|처음으로|여정으로|<Link/);
+  assert.match(journeyPage, /searchParams: Promise/);
+  assert.match(journeyPage, /query\.guide/);
+  assert.match(journeyPage, /query\.from/);
+  assert.match(journeyPage, /homeQuery\.set\("team"/);
+  assert.match(journeyPage, /homeQuery\.set\("from"/);
+  assert.match(journeyPage, /<MapScreen[\s\S]*navigation/);
+  assert.match(screen, /navigation = false/);
+  assert.match(screen, /data-map-mode=\{navigation \? "journey" : "standalone"\}/);
+  assert.match(screen, /생활관<br \/>층별 안내/);
+  assert.match(screen, /<MapExplorer/);
+  assert.match(screen, /navigation \? <Link href=\{homeHref\}>여정으로 돌아가기<\/Link> : null/);
+  assert.match(screen, /teamName \? "여정으로" : "처음으로"/);
 
   // Both floors are rendered together as stacked directory plates.
   assert.match(explorer, /type FloorKey = "1f" \| "2f"/);
@@ -385,6 +399,12 @@ test("map endpoint layers rooms and major shared spaces across both floors", asy
   );
   assert.match(styles, /perspective:/);
   assert.match(styles, /@media \(max-width: 700px\)/);
+  assert.match(styles, /@media \(orientation: landscape\) and \(max-height: 560px\)/);
+  assert.match(styles, /\.shell\[data-map-mode="standalone"\] \.floorStack\s*\{[^}]*min-width:\s*0/);
+  assert.match(styles, /\.shell\[data-map-mode="standalone"\] \.floorLayer\s*\{[^}]*top:\s*50% !important/);
+  assert.match(styles, /\.shell\[data-map-mode="standalone"\] \.roomOverlay\s*\{[^}]*display:\s*none/);
+  assert.match(styles, /\.shell\[data-map-mode="standalone"\] \.mobileFloorSwitcher\s*\{[^}]*display:\s*flex/);
+  assert.match(styles, /\.shell\[data-map-mode="standalone"\] \.roomDirectory\s*\{[^}]*grid-template-columns:/);
 
   const mobileMedia = styles.match(
     /@media \(max-width: 700px\) \{([\s\S]*?)\n\}\n\n@media \(prefers-reduced-motion/,

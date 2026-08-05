@@ -44,7 +44,7 @@ export default function JourneyAssist({
   const selectedStatus = selectedRoomKey ? roomStatuses[selectedRoomKey] : null;
   const completedRoomKeys = new Set(completedRooms);
   const mapHref = (guide?: RoomKey) =>
-    `/map?team=${encodeURIComponent(teamName)}${
+    `/map2?team=${encodeURIComponent(teamName)}${
       guide ? `&guide=${encodeURIComponent(guide)}` : ""
     }&from=${encodeURIComponent(previousRoomKey)}#floor-directory`;
 

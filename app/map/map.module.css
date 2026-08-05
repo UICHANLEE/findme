@@ -91,6 +91,16 @@
   letter-spacing: .06em;
 }
 
+.shell[data-map-mode="standalone"] .intro {
+  min-height: 310px;
+  grid-template-columns: 1fr;
+  align-items: center;
+}
+
+.shell[data-map-mode="standalone"] .intro h1 {
+  line-height: .9;
+}
+
 .explorer {
   padding: 44px 5.5vw 110px;
 }
@@ -898,6 +908,14 @@
     font-size: clamp(58px, 19vw, 74px);
     line-height: .86;
     overflow: visible;
+  }
+
+  .shell[data-map-mode="standalone"] .intro {
+    min-height: auto;
+  }
+
+  .shell[data-map-mode="standalone"] .intro h1 {
+    line-height: .94;
   }
 
   .introCopy {

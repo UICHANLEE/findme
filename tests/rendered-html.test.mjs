@@ -279,6 +279,7 @@ test("map endpoint layers rooms and major shared spaces across both floors", asy
   assert.match(journeyPage, /<MapScreen[\s\S]*navigation/);
   assert.match(screen, /navigation = false/);
   assert.match(screen, /data-map-mode=\{navigation \? "journey" : "standalone"\}/);
+  assert.match(screen, /\{navigation \? \([\s\S]*className=\{styles\.introCopy\}/);
   assert.match(screen, /생활관<br \/>층별 안내/);
   assert.match(screen, /<MapExplorer/);
   assert.match(screen, /navigation \? <Link href=\{homeHref\}>여정으로 돌아가기<\/Link> : null/);
@@ -399,6 +400,8 @@ test("map endpoint layers rooms and major shared spaces across both floors", asy
   );
   assert.match(styles, /perspective:/);
   assert.match(styles, /@media \(max-width: 700px\)/);
+  assert.match(styles, /\.shell\[data-map-mode="standalone"\] \.intro h1\s*\{[^}]*line-height:\s*\.9/);
+  assert.match(styles, /@media \(max-width: 700px\)[\s\S]*\.shell\[data-map-mode="standalone"\] \.intro h1\s*\{[^}]*line-height:\s*\.94/);
   assert.match(styles, /@media \(orientation: landscape\) and \(max-height: 560px\)/);
   assert.match(styles, /\.shell\[data-map-mode="standalone"\] \.floorStack\s*\{[^}]*min-width:\s*0/);
   assert.match(styles, /\.shell\[data-map-mode="standalone"\] \.floorLayer\s*\{[^}]*top:\s*50% !important/);

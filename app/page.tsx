@@ -67,9 +67,10 @@ function HomeContent() {
 
   useEffect(() => {
     let active = true;
+    let timer: number | undefined;
     const load = async () => {
       try {
-        const response = await fetch("/api/status", { cache: "no-store" });
+        const response = await fetch("/api/status");
         const data = await response.json() as {
           states?: TeamState[];
           roomStatuses?: Record<RoomKey, RoomLiveStatus>;
@@ -77,10 +78,10 @@ function HomeContent() {
         if (active && data.states) setStates(data.states);
         if (active && data.roomStatuses) setRoomStatuses(data.roomStatuses);
       } catch { /* next poll retries */ }
+      finally { if (active) timer = window.setTimeout(load, 2000); }
     };
-    load();
-    const timer = setInterval(load, 1000);
-    return () => { active = false; clearInterval(timer); };
+    void load();
+    return () => { active = false; if (timer) window.clearTimeout(timer); };
   }, []);
 
   const myState = useMemo(() => states.find((state) => state.teamId === teamKey(teamName)), [states, teamName]);
@@ -219,7 +220,7 @@ function HomeContent() {
       ) : null}
 
       <section className="room-overview" aria-label="방별 실시간 현황">
-        <div className="section-heading"><span>LIVE ROOMS</span><h2>다섯 개의 방을 찾아서</h2><p>눈으로, 소리로, 몸으로, 마음으로, 그리고 은혜로 찾아가요.</p></div>
+        <div className="section-heading"><span>LIVE ROOMS</span><h2>Find It</h2><p>눈으로, 소리로, 몸으로, 마음으로, 그리고 은혜로 찾아가요.</p></div>
         <div className="searching-zone">
           <div className="searching-icon">↝</div>
           <div><span>ON THE WAY</span><h3>방을 찾으러 다니는 중..</h3></div>

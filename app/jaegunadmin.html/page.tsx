@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import QRCode from "qrcode";
@@ -69,19 +69,50 @@ export default function AdminPage() {
   const [talents, setTalents] = useState<TalentRecord[]>([]);
   const [logTeam, setLogTeam] = useState("all");
 
-  const load = async () => {
+  const loadStatus = useCallback(async () => {
     try {
-      const [statusResponse, logsResponse, talentsResponse] = await Promise.all([fetch("/api/status", { cache: "no-store" }), fetch("/api/logs", { cache: "no-store" }), fetch("/api/talents", { cache: "no-store" })]);
+      const statusResponse = await fetch("/api/status?fresh=1", { cache: "no-store" });
       const statusData = await statusResponse.json() as { states?: TeamState[] };
-      const logsData = await logsResponse.json() as { logs?: ActivityLog[] };
-      const talentsData = await talentsResponse.json() as { records?: TalentRecord[] };
       if (statusData.states) setStates(statusData.states);
-      if (logsData.logs) setLogs(logsData.logs);
-      if (talentsData.records) setTalents(talentsData.records);
       setUpdated(new Date());
     } catch { /* next poll retries */ }
-  };
-  useEffect(() => { const first = window.setTimeout(load, 0); const timer = setInterval(load, 1000); return () => { clearTimeout(first); clearInterval(timer); }; }, []);
+  }, []);
+  const loadLogs = useCallback(async () => {
+    try {
+      const response = await fetch("/api/logs", { cache: "no-store" });
+      const data = await response.json() as { logs?: ActivityLog[] };
+      if (data.logs) setLogs(data.logs);
+    } catch { /* next poll retries */ }
+  }, []);
+  const loadTalents = useCallback(async () => {
+    try {
+      const response = await fetch("/api/talents", { cache: "no-store" });
+      const data = await response.json() as { records?: TalentRecord[] };
+      if (data.records) setTalents(data.records);
+    } catch { /* next poll retries */ }
+  }, []);
+  useEffect(() => {
+    let active = true;
+    let timer: number | undefined;
+    const poll = async () => {
+      await loadStatus();
+      if (active) timer = window.setTimeout(poll, 1000);
+    };
+    void poll();
+    return () => { active = false; if (timer) window.clearTimeout(timer); };
+  }, [loadStatus]);
+  useEffect(() => {
+    if (tab !== "logs" && tab !== "talents") return;
+    let active = true;
+    let timer: number | undefined;
+    const loadActiveTab = tab === "logs" ? loadLogs : loadTalents;
+    const poll = async () => {
+      await loadActiveTab();
+      if (active) timer = window.setTimeout(poll, 5000);
+    };
+    void poll();
+    return () => { active = false; if (timer) window.clearTimeout(timer); };
+  }, [loadLogs, loadTalents, tab]);
   useEffect(() => {
     if (typeof window === "undefined") return;
     Promise.all(rooms.flatMap((room) => (["enter", "exit"] as const).map(async (action) => [`${room.key}-${action}`, await QRCode.toDataURL(`${window.location.origin}/scan?room=${room.key}&action=${action}`, { width: 440, margin: 2, color: { dark: "#171713", light: "#ffffff" } })] as const))).then((pairs) => setQrCodes(Object.fromEntries(pairs)));
@@ -89,9 +120,9 @@ export default function AdminPage() {
 
   const exitTeam = async (teamName: string, room: string) => {
     await fetch("/api/check", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ teamName, room, action: "exit" }) });
-    load();
+    void loadStatus();
   };
-  const reset = async () => { if (!confirm("모든 조의 입장 상태, 활동 로그와 달란트 기록을 초기화할까요? 먼저 필요한 CSV를 다운로드해 주세요.")) return; await fetch("/api/reset", { method: "POST" }); load(); };
+  const reset = async () => { if (!confirm("모든 조의 입장 상태, 활동 로그와 달란트 기록을 초기화할까요? 먼저 필요한 CSV를 다운로드해 주세요.")) return; await fetch("/api/reset", { method: "POST" }); void loadStatus(); setLogs([]); setTalents([]); };
   const logTeams = Array.from(new Map(logs.map((log) => [log.teamId, log.teamName])).entries()).map(([teamId, teamName]) => ({ teamId, teamName }));
   const filteredLogs = logTeam === "all" ? logs : logs.filter((log) => log.teamId === logTeam);
   const durationLabel = (seconds: number | null) => seconds === null ? "-" : seconds < 60 ? `${seconds}초` : `${Math.floor(seconds / 60)}분 ${seconds % 60}초`;

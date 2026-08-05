@@ -1,6 +1,9 @@
 import { performance } from "node:perf_hooks";
 
 const baseUrl = process.env.BASE_URL || "http://127.0.0.1:3000";
+const participantUsers = Number(process.env.USERS || 150);
+const pollIntervalMs = Number(process.env.POLL_INTERVAL_MS || 2000);
+const requireNeon = process.env.REQUIRE_NEON === "1";
 const teams = [
   ["부하01조", "eyes"], ["부하02조", "eyes"],
   ["부하03조", "sound"],
@@ -16,7 +19,7 @@ async function request(path, init) {
   try {
     const response = await fetch(`${baseUrl}${path}`, init);
     await response.arrayBuffer();
-    return { ok: response.ok, status: response.status, ms: performance.now() - started };
+    return { ok: response.ok, status: response.status, ms: performance.now() - started, cacheStatus: response.headers.get("x-vercel-cache") ?? "none" };
   } catch (error) {
     return { ok: false, status: 0, ms: performance.now() - started, error: String(error) };
   }
@@ -36,7 +39,7 @@ async function check(teamName, room, action) {
 }
 
 async function statusState() {
-  const response = await fetch(`${baseUrl}/api/status`, { cache: "no-store" });
+  const response = await fetch(`${baseUrl}/api/status?fresh=1`, { cache: "no-store" });
   return response.json();
 }
 
@@ -46,7 +49,7 @@ async function runReadLoad({ users, seconds, intervalMs }) {
   const workers = Array.from({ length: users }, async () => {
     const deadline = started + seconds * 1000;
     while (performance.now() < deadline) {
-      samples.push(await request("/api/status", { cache: "no-store" }));
+      samples.push(await request("/api/status"));
       const wait = intervalMs - samples.at(-1).ms;
       if (wait > 0) await new Promise((resolve) => setTimeout(resolve, wait));
     }
@@ -65,6 +68,7 @@ async function runReadLoad({ users, seconds, intervalMs }) {
     p99Ms: Number(percentile(latency, 0.99).toFixed(1)),
     maxMs: Number((latency.at(-1) ?? 0).toFixed(1)),
     statuses: Object.fromEntries([...new Set(samples.map((sample) => sample.status))].map((status) => [status, samples.filter((sample) => sample.status === status).length])),
+    cacheStatuses: Object.fromEntries([...new Set(samples.map((sample) => sample.cacheStatus))].map((status) => [status, samples.filter((sample) => sample.cacheStatus === status).length])),
   };
 }
 
@@ -85,18 +89,57 @@ async function runWriteRace(rounds = 5) {
   return results;
 }
 
+async function runCapacityRace(rounds = 5) {
+  const results = [];
+  for (let round = 1; round <= rounds; round += 1) {
+    await reset();
+    const contenders = Array.from({ length: 8 }, (_, index) => check(`정원경쟁${round}-${index + 1}조`, "sound", "enter"));
+    const writes = await Promise.all(contenders);
+    const state = await statusState();
+    const inside = Array.isArray(state.states) ? state.states.filter((team) => team.currentRoom === "sound") : [];
+    results.push({
+      round,
+      successfulWrites: writes.filter((item) => item.ok).length,
+      roomFullResponses: writes.filter((item) => item.status === 409).length,
+      persistedInsideTeams: inside.length,
+      statusCodes: writes.map((item) => item.status),
+      passed: writes.filter((item) => item.ok).length === 1 && inside.length === 1,
+    });
+  }
+  return results;
+}
+
+const probe = await statusState();
+const storage = typeof probe.storage === "string" ? probe.storage : "unknown";
+if (requireNeon && storage !== "neon-postgres") {
+  throw new Error(`REQUIRE_NEON=1이지만 대상 서버 저장소는 ${storage}입니다.`);
+}
+
 await reset();
 for (const [team, room] of teams) await check(team, room, "enter");
 
-const realistic = await runReadLoad({ users: 120, seconds: 12, intervalMs: 1500 });
-const burst = await runReadLoad({ users: 120, seconds: 5, intervalMs: 0 });
+const realistic = await runReadLoad({ users: participantUsers, seconds: 12, intervalMs: pollIntervalMs });
+const burst = await runReadLoad({ users: participantUsers, seconds: 5, intervalMs: 0 });
 const writeRace = await runWriteRace(5);
+const capacityRace = await runCapacityRace(5);
 
-console.log(JSON.stringify({
+const report = {
   testedAt: new Date().toISOString(),
   baseUrl,
-  assumptions: { teams: 10, participants: 120, participantsPerTeam: 12, pollIntervalMs: 1500 },
+  storage,
+  requireNeon,
+  assumptions: { teams: 10, participants: participantUsers, participantsPerTeam: participantUsers / 10, pollIntervalMs },
   realistic,
   burst,
   writeRace,
-}, null, 2));
+  capacityRace,
+};
+
+console.log(JSON.stringify(report, null, 2));
+
+const failed = realistic.successRate !== 100
+  || burst.successRate !== 100
+  || writeRace.some((round) => round.successfulWrites !== teams.length || round.persistedTeams !== teams.length)
+  || capacityRace.some((round) => !round.passed);
+
+if (failed) process.exitCode = 1;

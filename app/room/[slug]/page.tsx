@@ -26,9 +26,10 @@ function RoomContent() {
     completedOnEntryRef.current = null;
     if (teamName) localStorage.setItem("find-team", teamName);
     let active = true;
+    let timer: number | undefined;
     const load = async () => {
       try {
-        const response = await fetch("/api/status", { cache: "no-store" });
+        const response = await fetch("/api/status");
         const data = await response.json() as { states?: TeamState[] };
         const state = data.states?.find((item) => item.teamId === teamId);
         if (!active || !state) return;
@@ -43,9 +44,10 @@ function RoomContent() {
         }
         setEnteredAt(state.enteredAt);
       } catch { /* next poll retries */ }
+      finally { if (active) timer = window.setTimeout(load, 2000); }
     };
-    load(); const timer = setInterval(load, 1000);
-    return () => { active = false; clearInterval(timer); };
+    void load();
+    return () => { active = false; if (timer) window.clearTimeout(timer); };
   }, [params.slug, room, router, teamId, teamName]);
 
   useEffect(() => {

@@ -41,7 +41,7 @@ export async function POST(request: Request) {
   try {
     const body = await request.json() as { teamName?: string; amounts?: Partial<Record<RoomKey, number>> };
     const teamName = cleanTeamName(body.teamName ?? "");
-    if (!teamName) return Response.json({ error: "조 이름이 필요합니다." }, { status: 400 });
+    if (teamName.length < 1 || teamName.length > 24) return Response.json({ error: "조 이름은 1~24자로 입력해 주세요." }, { status: 400 });
 
     const amounts = emptyAmounts();
     for (const room of rooms) {

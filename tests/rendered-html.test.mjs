@@ -17,6 +17,7 @@ test("participant and themed-room experiences are present", async () => {
   assert.match(home, /FIND <span>IT<\/span>/);
   assert.doesNotMatch(home, /FIND:US/);
   assert.match(home, /\/api\/status/);
+  assert.match(home, /window\.setTimeout\(load, 2000\)/);
   assert.match(home, /방을 찾으러 다니는 중/);
   assert.match(home, /team\.teamName/);
   assert.match(home, /elapsedRoomLabel/);
@@ -110,6 +111,8 @@ test("participant and themed-room experiences are present", async () => {
   assert.match(room, /room-map-button/);
   assert.match(room, /\/map\?team=/);
   assert.match(room, /completedOnEntryRef/);
+  assert.match(room, /window\.setTimeout\(load, 2000\)/);
+  assert.match(room, /setInterval\(update, 1000\)/);
   assert.match(room, /journeyComplete/);
   assert.match(room, /finale=1/);
   assert.match(data, /previousRoom: RoomKey \| null/);
@@ -131,7 +134,7 @@ test("participant and themed-room experiences are present", async () => {
 });
 
 test("administrator, QR, persistence, and deployment output are present", async () => {
-  const [admin, check, status, logs, talents, reset, store, vercel] = await Promise.all([
+  const [admin, check, status, logs, talents, reset, store, migration, vercel] = await Promise.all([
     read("app/jaegunadmin.html/page.tsx"),
     read("app/api/check/route.ts"),
     read("app/api/status/route.ts"),
@@ -139,6 +142,7 @@ test("administrator, QR, persistence, and deployment output are present", async 
     read("app/api/talents/route.ts"),
     read("app/api/reset/route.ts"),
     read("lib/find-store.ts"),
+    read("migrations/001_find_it.sql"),
     read("vercel.json"),
   ]);
   assert.match(admin, /QRCode\.toDataURL/);
@@ -153,22 +157,25 @@ test("administrator, QR, persistence, and deployment output are present", async 
   assert.match(admin, /\/api\/talents/);
   assert.match(admin, /TalentEditor/);
   assert.match(admin, /talentTotal/);
-  assert.match(check, /saveTeamState/);
-  assert.match(check, /appendActivityLog/);
+  assert.match(admin, /\/api\/status\?fresh=1/);
+  assert.match(admin, /window\.setTimeout\(poll, 1000\)/);
+  assert.match(admin, /window\.setTimeout\(poll, 5000\)/);
+  assert.match(admin, /tab !== "logs" && tab !== "talents"/);
+  assert.match(check, /transitionTeam/);
   assert.match(check, /teamName/);
   assert.match(check, /completedRooms/);
   assert.match(check, /ALREADY_IN_ROOM/);
   assert.match(check, /NOT_IN_ROOM/);
   assert.match(check, /idempotent: true/);
-  assert.match(check, /previousRoom:/);
-  assert.match(check, /previousRoomExitedAt:/);
-  assert.match(check, /previousRoomDurationSeconds:/);
-  assert.match(check, /state: next/);
+  assert.match(check, /state: existing/);
   assert.match(check, /collectedRoom/);
   assert.match(check, /journeyComplete/);
   assert.match(status, /roomStatuses/);
   assert.match(status, /availableSlots/);
   assert.match(status, /isFull/);
+  assert.match(status, /Vercel-CDN-Cache-Control/);
+  assert.match(status, /s-maxage=1, stale-while-revalidate=1/);
+  assert.match(status, /fresh/);
   assert.match(logs, /getActivityLogs/);
   assert.match(logs, /text\/csv/);
   assert.match(logs, /Content-Disposition/);
@@ -178,9 +185,17 @@ test("administrator, QR, persistence, and deployment output are present", async 
   assert.match(talents, /0~999/);
   assert.match(store, /MAX_LOGS/);
   assert.match(store, /TALENT_KEY/);
-  assert.match(store, /Legacy records deliberately remain unknown/);
-  assert.match(store, /normalizeRoomKey\(state\.previousRoom\)/);
-  assert.match(reset, /clearTalentRecords/);
+  assert.match(store, /Legacy cache records deliberately remain unknown/);
+  assert.match(store, /DATABASE_URL/);
+  assert.match(store, /database\.transaction/);
+  assert.match(store, /pg_advisory_xact_lock/);
+  assert.match(store, /find-it-team-transition/);
+  assert.match(store, /collected_now/);
+  assert.match(store, /find_it_activity_logs/);
+  assert.match(reset, /clearFindData/);
+  assert.match(migration, /CREATE TABLE IF NOT EXISTS find_it_team_states/);
+  assert.match(migration, /CREATE TABLE IF NOT EXISTS find_it_activity_logs/);
+  assert.match(migration, /CREATE TABLE IF NOT EXISTS find_it_talent_records/);
   assert.match(vercel, /"icn1"/);
   await access(new URL(".next/BUILD_ID", root));
   await access(new URL("public/favicon.svg", root));
@@ -228,14 +243,14 @@ test("in-app camera scans a saved team's QR without another name prompt", async 
   assert.match(scan, /localStorage\.getItem\("find-team"\)/);
   assert.doesNotMatch(scan, /입장할 조 이름을 적어 주세요/);
   assert.match(check, /ROOM_FULL/);
-  assert.match(check, /otherTeamsInside >= room\.maxTeams/);
+  assert.match(check, /maxTeams: room\.maxTeams/);
   assert.match(scanner, /window\.alert/);
   assert.match(scanner, /data\.collectedRoom/);
   assert.match(scanner, /data\.journeyComplete/);
   assert.match(scan, /data\.journeyComplete/);
   assert.match(scanner, /&from=\$\{room\.key\}/);
   assert.match(scan, /&from=\$\{room\.key\}/);
-  assert.match(check, /collectedRoom: collectedNow \? room\.key : null/);
+  assert.match(check, /collectedRoom: result\.collectedRoom/);
   assert.match(check, /rooms\.every/);
   assert.match(scanner, /camera-\$\{transition\.action\}/);
   assert.doesNotMatch(home, /jaegunadmin\.html/);
